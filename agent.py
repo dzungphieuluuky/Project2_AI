@@ -27,15 +27,21 @@ class Agent:
             self.location += self.orientation
         else:
             self.location -= self.orientation
+        self.score -= 1
     
     def turn_left(self):
         self.orientation_index = (self.orientation_index - 1) % 4
+        self.orientation = self.directions[self.orientation_index]
+        self.score -= 1
     
     def turn_right(self):
         self.orientation_index = (self.orientation_index + 1) % 4
-    
+        self.orientation = self.directions[self.orientation_index]
+        self.score -= 1
+
     def grab(self):
         self.has_gold = True
+        self.score += 10
 
     def shoot(self):
         self.has_arrow = False
@@ -44,3 +50,9 @@ class Agent:
     def climb_out(self):
         if self.location == (0, 0):
             self.has_escaped = True
+            if self.has_gold:
+                self.score += 1000
+    
+    def die(self):
+        self.score -= 1000
+    
