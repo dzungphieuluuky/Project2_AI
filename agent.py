@@ -1,5 +1,6 @@
 from enum import Enum
-
+from inference import InferenceEngine
+from environment import Environment
 class Direction(Enum):
     UP = (0, 1)
     DOWN = (0, -1)
@@ -15,6 +16,11 @@ class Agent:
         self.score = 0
         self.has_escaped = False
         self.has_gold = False
+        self.actions = [self.move_forward, self.turn_left, self.turn_right,
+                        self.grab, self.shoot, self.climb_out]
+        
+        # kb = Knowledge Base
+        self.kb = InferenceEngine()
     
     def move_forward(self):
         if self.orientation == Direction.LEFT or self.orientation == Direction.RIGHT:

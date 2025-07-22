@@ -1,0 +1,2 @@
+class InferenceEngine:
+    pass
