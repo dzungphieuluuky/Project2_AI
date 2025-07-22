@@ -1,0 +1,40 @@
+from enum import Enum
+
+class Direction(Enum):
+    UP = (0, 1)
+    DOWN = (0, -1)
+    LEFT = (-1, 0)
+    RIGHT = (1, 0)
+class Agent:
+    def __init__(self):
+        self.location = (0, 0)
+        self.directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
+        self.orientation_index = 1 
+        self.orientation = self.directions[self.orientation_index]
+        self.has_arrow = True
+        self.score = 0
+        self.has_escaped = False
+        self.has_gold = False
+    
+    def move_forward(self):
+        if self.orientation == Direction.LEFT or self.orientation == Direction.RIGHT:
+            self.location += self.orientation
+        else:
+            self.location -= self.orientation
+    
+    def turn_left(self):
+        self.orientation_index = (self.orientation_index - 1) % 4
+    
+    def turn_right(self):
+        self.orientation_index = (self.orientation_index + 1) % 4
+    
+    def grab(self):
+        self.has_gold = True
+
+    def shoot(self):
+        self.has_arrow = False
+        self.score -= 10
+
+    def climb_out(self):
+        if self.location == (0, 0):
+            self.has_escaped = True
