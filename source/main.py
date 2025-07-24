@@ -36,7 +36,7 @@ clock = pygame.time.Clock()
 def menu_loop() -> None:
     running = True
     screen.fill(WHITE)
-    image = pygame.image.load('./assets/background.jpg').convert_alpha()
+    image = pygame.image.load('./assets/background.png').convert_alpha()
     image_rect = image.get_rect()
 
     button_width = 200
@@ -52,7 +52,7 @@ def menu_loop() -> None:
                       button_width, button_height, AMARANTH_PURPLE, quit_game)]
     
     hovered_button = 0
-    title = font.render("Rush Hour with AI", True, AMARANTH_PURPLE)
+    title = font.render("Wumpus World Agent", True, AMARANTH_PURPLE)
 
     while running:
         screen.blit(image, image_rect)
@@ -90,15 +90,16 @@ def menu_loop() -> None:
         clock.tick(FPS)
 
 def start_game():
-    pass
+    # placeholder
+    quit_game()
 
 def introduction_screen() -> None:
     introductions = [
-        "This is an application to visualize The Wumpus World Game.",
-        "Here are some instruction to help you through the application!",
+        "This is The Wumpus World Game visualizer.",
+        "Here are some instructions to help you through the application!",
         "1. Use arrow (up/down/left/right) or WASD keys to navigate the buttons.",
         "2. You can view all the agent's knowledge and actions on the screen.",
-        "3. You can change the size of the map by clicking on the button."
+        "3. You can change the size of the map by clicking on the button.",
         "4. Click the Start Game below to see what the agent will do!"
     ]
     # list to hold all buttons
@@ -151,3 +152,9 @@ def introduction_screen() -> None:
 def quit_game():
     pygame.quit()
     sys.exit()
+
+def main():
+    menu_loop()
+
+if __name__ == "__main__":
+    main()
