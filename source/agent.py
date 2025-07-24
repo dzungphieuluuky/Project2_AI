@@ -1,4 +1,6 @@
 from enum import Enum
+import random
+
 from inference import InferenceEngine
 from environment import Environment
 class Direction(Enum):
@@ -6,8 +8,9 @@ class Direction(Enum):
     DOWN = (0, -1)
     LEFT = (-1, 0)
     RIGHT = (1, 0)
+
 class Agent:
-    def __init__(self):
+    def __init__(self) -> None:
         self.location = (0, 0)
         self.directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
         self.orientation_index = 1 
@@ -22,37 +25,47 @@ class Agent:
         # kb = Knowledge Base
         self.kb = InferenceEngine()
     
-    def move_forward(self):
+    def move_forward(self) -> None:
         if self.orientation == Direction.LEFT or self.orientation == Direction.RIGHT:
             self.location += self.orientation
         else:
             self.location -= self.orientation
         self.score -= 1
     
-    def turn_left(self):
+    def turn_left(self) -> None:
         self.orientation_index = (self.orientation_index - 1) % 4
         self.orientation = self.directions[self.orientation_index]
         self.score -= 1
     
-    def turn_right(self):
+    def turn_right(self) -> None:
         self.orientation_index = (self.orientation_index + 1) % 4
         self.orientation = self.directions[self.orientation_index]
         self.score -= 1
 
-    def grab(self):
+    def grab(self) -> None:
         self.has_gold = True
         self.score += 10
 
-    def shoot(self):
+    def shoot(self) -> None:
         self.has_arrow = False
         self.score -= 10
 
-    def climb_out(self):
+    def climb_out(self) -> None:
         if self.location == (0, 0):
             self.has_escaped = True
             if self.has_gold:
                 self.score += 1000
     
-    def die(self):
+    def die(self) -> None:
         self.score -= 1000
     
+    'Select action after inference and planning'
+    def select_action(self) -> None:
+        pass
+
+class RandomAgent(Agent):
+    def __init__(self):
+        super().__init__()
+    def select_action(self) -> None:
+        action_selected_index = random.randint(0, len(self.actions) - 1)
+        self.actions[action_selected_index]()
