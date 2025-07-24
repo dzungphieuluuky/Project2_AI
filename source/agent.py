@@ -2,7 +2,7 @@ from enum import Enum
 import random
 
 from inference import InferenceEngine
-from environment import Environment
+from planning import Planner
 class Orientation(Enum):
     UP = (0, 1)
     DOWN = (0, -1)
@@ -24,6 +24,7 @@ class Agent:
         
         # kb = Knowledge Base
         self.kb = InferenceEngine()
+        self.planner = Planner()
     
     def move_forward(self) -> None:
         if self.orientation == Orientation.LEFT or self.orientation == Orientation.RIGHT:
