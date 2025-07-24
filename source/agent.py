@@ -3,7 +3,7 @@ import random
 
 from inference import InferenceEngine
 from environment import Environment
-class Direction(Enum):
+class Orientation(Enum):
     UP = (0, 1)
     DOWN = (0, -1)
     LEFT = (-1, 0)
@@ -12,9 +12,9 @@ class Direction(Enum):
 class Agent:
     def __init__(self) -> None:
         self.location = (0, 0)
-        self.directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
+        self.orientations = [Orientation.UP, Orientation.RIGHT, Orientation.DOWN, Orientation.LEFT]
         self.orientation_index = 1 
-        self.orientation = self.directions[self.orientation_index]
+        self.orientation = self.orientations[self.orientation_index]
         self.has_arrow = True
         self.score = 0
         self.has_escaped = False
@@ -26,7 +26,7 @@ class Agent:
         self.kb = InferenceEngine()
     
     def move_forward(self) -> None:
-        if self.orientation == Direction.LEFT or self.orientation == Direction.RIGHT:
+        if self.orientation == Orientation.LEFT or self.orientation == Orientation.RIGHT:
             self.location += self.orientation
         else:
             self.location -= self.orientation
@@ -34,12 +34,12 @@ class Agent:
     
     def turn_left(self) -> None:
         self.orientation_index = (self.orientation_index - 1) % 4
-        self.orientation = self.directions[self.orientation_index]
+        self.orientation = self.orientations[self.orientation_index]
         self.score -= 1
     
     def turn_right(self) -> None:
         self.orientation_index = (self.orientation_index + 1) % 4
-        self.orientation = self.directions[self.orientation_index]
+        self.orientation = self.orientations[self.orientation_index]
         self.score -= 1
 
     def grab(self) -> None:
@@ -66,6 +66,7 @@ class Agent:
 class RandomAgent(Agent):
     def __init__(self):
         super().__init__()
+
     def select_action(self) -> None:
         action_selected_index = random.randint(0, len(self.actions) - 1)
         self.actions[action_selected_index]()
