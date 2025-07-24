@@ -92,8 +92,61 @@ def menu_loop() -> None:
 def start_game():
     pass
 
-def introduction_screen():
-    pass
+def introduction_screen() -> None:
+    introductions = [
+        "This is an application to visualize The Wumpus World Game.",
+        "Here are some instruction to help you through the application!",
+        "1. Use arrow (up/down/left/right) or WASD keys to navigate the buttons.",
+        "2. You can view all the agent's knowledge and actions on the screen.",
+        "3. You can change the size of the map by clicking on the button."
+        "4. Click the Start Game below to see what the agent will do!"
+    ]
+    # list to hold all buttons
+    buttons = []
+
+    title = title_font.render("Introduction", True, BLACK)
+
+    back_button_title = button_font.render("Back to Menu", True, BLACK)
+    back_button_width = back_button_title.get_width() + 35
+    back_button_height = back_button_title.get_height() + 35
+    back_button = Button("Back to Menu", WIDTH - 20 - back_button_width, 20, 
+                            back_button_width, back_button_height, ATOMIC_TANGERINE, menu_loop)
+    buttons.append(back_button)
+
+    start_button_title = button_font.render("Start Game", True, BLACK)
+    start_button_width = start_button_title.get_width() + 35
+    start_button_height = start_button_title.get_height() + 35
+    start_button = Button("Start Game", WIDTH // 2 - start_button_width // 2,HEIGHT - 20 - start_button_height, 
+                            start_button_width, start_button_height, AMARANTH_PURPLE, start_game)
+    buttons.append(start_button)
+
+    running = True
+    while running:
+        screen.fill(CREAM)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 50))
+
+        # rendering intro text
+        for i, line in enumerate(introductions):
+            text = intro_font.render(line, True, BLACK)
+            screen.blit(text, (20, 150 + 40 * i))
+        
+        for button in buttons:
+            button.draw_button(screen)
+
+        # event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                running = False
+            
+            for button in buttons:
+                button.handle_event(event=event)
+    
+        pygame.display.flip()
+        clock.tick(FPS)
 
 def quit_game():
     pygame.quit()
