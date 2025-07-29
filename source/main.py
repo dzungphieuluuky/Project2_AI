@@ -3,21 +3,17 @@ from world import WumpusWorld
 from knowledge_base import KnowledgeBase
 import random
 
-def get_percepts(world: WumpusWorld, x: int, y: int) -> dict:
-    """Lấy percept tại vị trí agent hiện tại"""
-    tile = world.listCells[x][y]
-    return {
-        "breeze": tile.getBreeze(),
-        "stench": tile.getStench(),
-        "glitter": tile.getGold(),
-        "bump": False,  # chưa xử lý tường
-        "scream": False  # được xử lý khi bắn trúng Wumpus
-    }
-
-
 def main():
-    agent = Agent()
-    world = WumpusWorld(agent=agent)
+    random_agent_input = input("Random Agent? (y/n)").lower()
+    if (random_agent_input == "y"):
+        agent = Agent(random=True)
+    else:
+        agent = Agent()
+    wumpus_moving_input = input("Moving Wumpus? (y/n)").lower()
+    if (wumpus_moving_input == "y"):
+        world = WumpusWorld(agent=agent, moving_wumpus=True)
+    else:
+        world = WumpusWorld(agent=agent, moving_wumpus=False)
 
     world.listCells[0][0].setPlayer()
     print("Bắt đầu game")
@@ -30,16 +26,15 @@ def main():
         print(f"Score: {agent.score}, Gold: {agent.has_gold}, Arrow: {agent.has_arrow}")
 
         # B1: lấy percept và cập nhật KB
-        x, y = agent.location
-        percept = get_percepts(world, x, y)
-        percept["scream"] = scream_flag
-        percept["bump"] = bump_flag
-        print(f"Percept: {percept}")
+        agent.percepts = world.tell_agent_percept()
+        agent.percepts["scream"] = scream_flag
+        agent.percepts["bump"] = bump_flag
+        print(f"Percept: {agent.percepts}")
         scream_flag = False
         bump_flag = False
 
         world.tell_agent_adjacent_cells()
-        agent.tell(percept)
+        agent.tell()
         world.update_agent_known_cells()
         agent.infer_surrounding_cells()
 
@@ -51,6 +46,10 @@ def main():
             action = input("Hành động (forward / left / right / grab / shoot / climb / exit): ").strip().lower()
         else:
             action = random.sample(['f', 'l', 'r', 'g', 's', 'c', 'e'], k=1)[0]
+
+        if action not in ['f', 'l', 'r', 'g', 's', 'c', 'e']:
+            print("Hành động không hợp lệ")
+            continue
 
         if action == "f":
             old_pos = agent.location
@@ -67,8 +66,7 @@ def main():
             tile = world.listCells[x][y]
             if tile.getPit() or tile.getWumpus():
                 print(" Agent đã chết!")
-                agent.alive = False
-                agent.score -= 1000
+                agent.die()
                 
 
             # an toàn → cập nhật ~Wxy và ~Pxy vào KB
@@ -113,9 +111,10 @@ def main():
         elif action == "e":
             break
 
-        else:
-            print("Hành động không hợp lệ.")
-            continue
+        if world.moving_wumpus:
+            world.counter += 1
+            if world.counter % 5 == 0:
+                world.move_all_wumpuses()
 
     print("🎯 Trò chơi kết thúc.")
     print(f"Điểm cuối cùng: {agent.score}")

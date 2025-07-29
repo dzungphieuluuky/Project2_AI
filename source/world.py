@@ -3,13 +3,17 @@ from agent import Agent
 from random import randrange, random, sample
 
 class WumpusWorld:
-    def __init__(self, agent: Agent, size=8, num_wumpus=2, pit_prob=0.2) -> None:
+    def __init__(self, agent: Agent, size=8, num_wumpus=2, pit_prob=0.2, moving_wumpus = False) -> None:
         self.size = size
         self.numWumpus = num_wumpus
+        self.wumpus_positions = []
         self.p = pit_prob
+        self.counter = 0
+        self.moving_wumpus = moving_wumpus
 
         self.listCells = [[Cell(x, y) for x in range(size)] for y in range(size)]
         self.agent = agent
+        self.agent.known_cells.append(self.listCells[0][0])
         #self.doorPos = (0, 0)
 
         # (0,0) luôn an toàn
@@ -26,6 +30,7 @@ class WumpusWorld:
         available_positions = [(x, y) for x in range(size) for y in range(size)
                                if (x, y) != (0, 0) and not self.listCells[x][y].getPit()]
         wumpus_positions = sample(available_positions, self.numWumpus)
+        self.wumpus_positions = wumpus_positions
         for (x, y) in wumpus_positions:
             self.listCells[x][y].setWumpus()
 
@@ -50,12 +55,24 @@ class WumpusWorld:
                     for nx, ny in self.get_Adjacents(x, y):
                         self.listCells[nx][ny].setStench()
 
-    def tell_agent_adjacent_cells(self):
+    def tell_agent_percept(self) -> dict:
+        """Lấy percept tại vị trí agent hiện tại"""
+        x, y = self.agent.location
+        tile = self.listCells[x][y]
+        return {
+            "breeze": tile.getBreeze(),
+            "stench": tile.getStench(),
+            "glitter": tile.getGold(),
+            "bump": False,  # chưa xử lý tường
+            "scream": False  # được xử lý khi bắn trúng Wumpus
+        }
+
+    def tell_agent_adjacent_cells(self) -> None:
         x, y = self.agent.location
         adjacent_cells = self.get_Adjacents(x, y)
         self.agent.adjacent_cells = adjacent_cells
     
-    def update_agent_known_cells(self):
+    def update_agent_known_cells(self) -> None:
         x, y = self.agent.location
         adjacent_cells = self.get_Adjacents(x, y)
         for (i, j) in adjacent_cells:
@@ -102,7 +119,20 @@ class WumpusWorld:
         # Add to new position
         self.listCells[tx][ty].setPlayer()
         self.listCells[tx][ty].setVisited()  # mark as visited
+    
+    def move_all_wumpuses(self):
+        for (i, j) in self.wumpus_positions:
+            old_wumpus_pos = (i, j)
+            wumpus_adj_cells = self.get_Adjacents(i, j)
+            new_wumpus_pos = sample(wumpus_adj_cells, k=1)[0]
+            new_x, new_y = new_wumpus_pos
 
+            "Need check to wall collision"
+            if self.listCells[new_x][new_y].getWumpus() or self.listCells[new_x][new_y].getPit():
+                new_wumpus_pos = old_wumpus_pos
+            
+            if new_wumpus_pos == self.agent.location:
+                self.agent.die()
     # debug 
     def printWorld(self)-> None:
         print("\n========== WUMPUS WORLD ==========")
@@ -111,8 +141,9 @@ class WumpusWorld:
             for x in range(self.size):        # x từ trái sang phải
                 cell = self.listCells[x][y]
                 content = cell.printTile()
-                if content == "":
-                    content = "Empty"
+                "Only display cells that has content and in agent's knowledge"
+                if content == "" or cell not in self.agent.known_cells:
+                    content = "?"
                 row += f"[{content:^12}]"  # căn giữa trong ô rộng 12 ký tự
             print(row)
         print("==================================\n")

@@ -14,10 +14,13 @@ class Agent:
         self.actions = [self.turn_left, self.turn_right, self.move_forward,
                         self.grab, self.shoot, self.climb_out]
         self.is_random = random
+
         self.known_cells = []
         self.adjacent_cells = []
+        self.percepts = {}
 
         self.kb = KnowledgeBase()
+        # self.planner = Planner()
 
     def turn_left(self) -> None:
         idx = self.DIRECTIONS.index(self.direction)
@@ -57,8 +60,12 @@ class Agent:
             self.out = True
             self.score += 1000 * self.has_gold
     
-    def tell(self, percept: dict) -> None:
-        self.kb.tell(percept, self.location, self.adjacent_cells)
+    def die(self) -> None:
+        self.alive = False
+        self.score -= 1000
+
+    def tell(self) -> None:
+        self.kb.tell(self.percepts, self.location, self.adjacent_cells)
     
     def update_kb(self) -> None:
         x, y = self.location
