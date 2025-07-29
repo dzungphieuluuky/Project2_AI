@@ -1,5 +1,5 @@
 class Agent:
-    def __init__(self, start=(0, 0)) -> None:
+    def __init__(self, start=(0, 0), random=False) -> None:
         self.location = start
         self.direction = "RIGHT"  # mặc định quay phải
         self.has_arrow = True
@@ -8,6 +8,9 @@ class Agent:
         self.alive = True
         self.out = False  # đã ra khỏi hang chưa
         self.DIRECTIONS = ["UP", "RIGHT", "DOWN", "LEFT"]  # theo thứ tự quay phải
+        self.actions = [self.turn_left, self.turn_right, self.move_forward,
+                        self.grab, self.shoot, self.climb_out]
+        self.is_random = random
 
     def turn_left(self) -> None:
         idx = self.DIRECTIONS.index(self.direction)

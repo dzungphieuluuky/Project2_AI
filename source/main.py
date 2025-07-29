@@ -1,7 +1,7 @@
 from agent import Agent
 from world import WumpusWorld
 from knowledge_base import KnowledgeBase
-
+import random
 
 def get_percepts(world: WumpusWorld, x: int, y: int) -> dict:
     """Lấy percept tại vị trí agent hiện tại"""
@@ -17,7 +17,7 @@ def get_percepts(world: WumpusWorld, x: int, y: int) -> dict:
 
 def main():
     world = WumpusWorld()
-    agent = Agent()
+    agent = Agent(random=True)
     kb = KnowledgeBase()
     kb.size = world.size
     world.listTiles[0][0].setPlayer()
@@ -47,7 +47,10 @@ def main():
         print(kb.clauses)
 
         # B2: nhập hành động
-        action = input("Hành động (forward / left / right / grab / shoot / climb / exit): ").strip().lower()
+        if agent.is_random == False:
+            action = input("Hành động (forward / left / right / grab / shoot / climb / exit): ").strip().lower()
+        else:
+            action = random.sample(['f', 'l', 'r', 'g', 's', 'c', 'e'], k=1)[0]
 
         if action == "f":
             old_pos = agent.location
