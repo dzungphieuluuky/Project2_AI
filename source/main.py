@@ -18,8 +18,9 @@ def get_percepts(world: WumpusWorld, x: int, y: int) -> dict:
 def main():
     world = WumpusWorld()
     agent = Agent(random=True)
-    kb = KnowledgeBase()
-    kb.size = world.size
+
+    agent.kb.size = world.size
+
     world.listTiles[0][0].setPlayer()
     print("Bắt đầu game")
 
@@ -39,12 +40,14 @@ def main():
         scream_flag = False
         bump_flag = False
 
-        kb.tell(percept, (x, y))
-        kb.full_resolution_closure()
-        kb.infer_safe_and_dangerous_tiles(world.listTiles)
+        agent.tell(percept)
+        
+        # cần integrate 2 dòng này vào agent
+        agent.kb.full_resolution_closure()
+        agent.kb.infer_safe_and_dangerous_tiles(world.listTiles)
 
         world.printWorld()
-        print(kb.clauses)
+        print(agent.kb.clauses)
 
         # B2: nhập hành động
         if agent.is_random == False:
@@ -72,8 +75,7 @@ def main():
                 
 
             # an toàn → cập nhật ~Wxy và ~Pxy vào KB
-            kb.add_clause({f"~P{x}{y}"})
-            kb.add_clause({f"~W{x}{y}"})
+            agent.update_kb()
 
             world.movePlayer(old_pos, agent.location)
 

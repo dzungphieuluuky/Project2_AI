@@ -1,3 +1,6 @@
+from knowledge_base import KnowledgeBase
+from planning import Planner
+
 class Agent:
     def __init__(self, start=(0, 0), random=False) -> None:
         self.location = start
@@ -11,6 +14,8 @@ class Agent:
         self.actions = [self.turn_left, self.turn_right, self.move_forward,
                         self.grab, self.shoot, self.climb_out]
         self.is_random = random
+        self.known_tiles = []
+        self.kb = KnowledgeBase()
 
     def turn_left(self) -> None:
         idx = self.DIRECTIONS.index(self.direction)
@@ -50,3 +55,16 @@ class Agent:
         if self.location == (0, 0):
             self.out = True
             self.score += 1000 * self.has_gold
+    
+    def tell(self, percept: dict) -> None:
+        self.kb.tell(percept, self.location)
+        self.known_tiles
+    
+    def update_kb(self) -> None:
+        x, y = self.location
+        self.kb.add_clause({f"~P{x}{y}"})
+        self.kb.add_clause({f"~W{x}{y}"})
+    
+    def infer_surrounding_tiles(self):
+        pass
+
