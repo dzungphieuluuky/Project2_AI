@@ -5,7 +5,7 @@ import random
 
 def get_percepts(world: WumpusWorld, x: int, y: int) -> dict:
     """Lấy percept tại vị trí agent hiện tại"""
-    tile = world.listTiles[x][y]
+    tile = world.listCells[x][y]
     return {
         "breeze": tile.getBreeze(),
         "stench": tile.getStench(),
@@ -16,12 +16,10 @@ def get_percepts(world: WumpusWorld, x: int, y: int) -> dict:
 
 
 def main():
-    world = WumpusWorld()
-    agent = Agent(random=True)
+    agent = Agent()
+    world = WumpusWorld(agent=agent)
 
-    agent.kb.size = world.size
-
-    world.listTiles[0][0].setPlayer()
+    world.listCells[0][0].setPlayer()
     print("Bắt đầu game")
 
     scream_flag = False
@@ -40,11 +38,10 @@ def main():
         scream_flag = False
         bump_flag = False
 
+        world.tell_agent_adjacent_cells()
         agent.tell(percept)
-        
-        # cần integrate 2 dòng này vào agent
-        agent.kb.full_resolution_closure()
-        agent.kb.infer_safe_and_dangerous_tiles(world.listTiles)
+        world.update_agent_known_cells()
+        agent.infer_surrounding_cells()
 
         world.printWorld()
         print(agent.kb.clauses)
@@ -67,7 +64,7 @@ def main():
                 continue
 
             # nếu rơi vào hố hoặc gặp wumpus thì chết
-            tile = world.listTiles[x][y]
+            tile = world.listCells[x][y]
             if tile.getPit() or tile.getWumpus():
                 print(" Agent đã chết!")
                 agent.alive = False

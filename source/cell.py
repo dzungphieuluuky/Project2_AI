@@ -1,5 +1,5 @@
 class Cell:
-    def __init__(self) -> None:
+    def __init__(self, x: int, y: int) -> None:
         """Initialize an empty tile"""
         self.__isPit = False
         self.__isBreeze = False
@@ -10,6 +10,7 @@ class Cell:
         self._safe = False
         self._dangerous = False
         self.__visited = False
+        self.location = (x, y)
 
     # Getters
     def getPit(self) -> bool:

@@ -47,23 +47,9 @@ class KnowledgeBase:
                         added_new = True
 
             self.clauses.extend(new_clauses)
-
-    def get_Adjacents(self, i: int, j: int) -> list[tuple[int, int]]:
-        adj = []
-        if i - 1 >= 0:
-            adj.append((i - 1, j))
-        if i + 1 < self.size:
-            adj.append((i + 1, j))
-        if j - 1 >= 0:
-            adj.append((i, j - 1))
-        if j + 1 < self.size:
-            adj.append((i, j + 1))
-        return adj
     
-    def tell(self, percepts: dict, location: tuple[int, int]) -> None:
+    def tell(self, percepts: dict, location: tuple[int, int], adjacents: list[tuple[int, int]]) -> None:
         x, y = location
-        adjacents = self.get_Adjacents(x, y)
-
         # Breeze
         if percepts.get("breeze", False) == True:
             clause = {f"P{nx}{ny}" for (nx, ny) in adjacents}
@@ -80,23 +66,22 @@ class KnowledgeBase:
             for (nx, ny) in adjacents:
                 self.add_clause({f"~W{nx}{ny}"})
     
-    def infer_safe_and_dangerous_tiles(self, listTiles: list[list[Cell]]):
-        for x in range(self.size):
-            for y in range(self.size):
-                pid = f"P{x}{y}"
-                wid = f"W{x}{y}"
+    def infer_safe_and_dangerous_cells(self, knownCells: list[Cell]) -> None:
+        for cell in knownCells:
+            x, y = cell.location
+            pid = f"P{x}{y}"
+            wid = f"W{x}{y}"
 
-                # Kiểm tra nếu tồn tại mệnh đề đơn khẳng định chắc chắn
-                definitely_p = {pid} in self.clauses
-                definitely_w = {wid} in self.clauses
+            # Kiểm tra nếu tồn tại mệnh đề đơn khẳng định chắc chắn
+            definitely_p = {pid} in self.clauses
+            definitely_w = {wid} in self.clauses
 
-                # Kiểm tra nếu tồn tại mệnh đề đơn phủ định cả pit và wumpus
-                definitely_not_p = {f"~{pid}"} in self.clauses
-                definitely_not_w = {f"~{wid}"} in self.clauses
+            # Kiểm tra nếu tồn tại mệnh đề đơn phủ định cả pit và wumpus
+            definitely_not_p = {f"~{pid}"} in self.clauses
+            definitely_not_w = {f"~{wid}"} in self.clauses
 
-                cell = listTiles[x][y]
-                if definitely_p or definitely_w:
-                    cell.markDangerous()
-                elif definitely_not_p and definitely_not_w:
-                    cell.markSafe()
+            if definitely_p or definitely_w:
+                cell.markDangerous()
+            elif definitely_not_p and definitely_not_w:
+                cell.markSafe()
 
