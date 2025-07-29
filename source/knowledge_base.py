@@ -65,7 +65,7 @@ class KnowledgeBase:
         adjacents = self.get_Adjacents(x, y)
 
         # Breeze
-        if percepts.get("breeze", default=False) == True:
+        if percepts.get("breeze", False) == True:
             clause = {f"P{nx}{ny}" for (nx, ny) in adjacents}
             self.add_clause(clause)
         else:
@@ -73,7 +73,7 @@ class KnowledgeBase:
                 self.add_clause({f"~P{nx}{ny}"})
 
         # Stench
-        if percepts.get("stench", default=False) == True:
+        if percepts.get("stench", False) == True:
             clause = {f"W{nx}{ny}" for (nx, ny) in adjacents}
             self.add_clause(clause)
         else:
