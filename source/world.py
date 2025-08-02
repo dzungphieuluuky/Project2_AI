@@ -148,7 +148,7 @@ class WumpusWorld:
     
     def update_world(self, action) -> None:
         if action is None:
-            print("Hành động không hợp lệ")
+            print("Not a valid action!")
             return
         
         elif action == "f":
@@ -165,7 +165,7 @@ class WumpusWorld:
             # nếu rơi vào hố hoặc gặp wumpus thì chết
             cell = self.listCells[new_x][new_y]
             if cell.getPit() or cell.getWumpus():
-                print(" Agent is dead!")
+                print("💀 Agent is dead!")
                 self.agent.die()
                 
             # an toàn → cập nhật ~Wxy và ~Pxy vào KB
@@ -206,9 +206,11 @@ class WumpusWorld:
 
         elif action == "c":
             self.agent.climb_out()
+            print("🧗 Agent has climbed out of the map")
 
         elif action == "e":
             self.agent.exit()
+            print("🔚 Agent has exitted the map")
 
         if self.moving_wumpus:
             self.counter += 1

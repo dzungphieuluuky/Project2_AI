@@ -92,9 +92,11 @@ class Agent:
             action = random.sample(['f', 'l', 'r', 'g', 's', 'c', 'e'], k=1)[0]
         else:
             action = input("Hành động (forward / left / right / grab / shoot / climb / exit): ").strip().lower()
-            if action not in ['f', 'l', 'r', 'g', 's', 'c', 'e']:
-                action = None
-                self.selected_action = "None"
+        
+        if action not in ['f', 'l', 'r', 'g', 's', 'c', 'e']:
+            action = None
+            self.selected_action = "None"
+
         if action == "f":
             self.selected_action = "forward"
         elif action == "l":

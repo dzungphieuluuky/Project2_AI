@@ -13,6 +13,8 @@ def main():
         world = WumpusWorld(agent=agent, moving_wumpus=True)
     else:
         world = WumpusWorld(agent=agent, moving_wumpus=False)
+    
+    number_of_actions = 0
 
     print("GAME STARTED")
     print("Game Symbol Definition:")
@@ -25,7 +27,7 @@ def main():
     print("Safe: ✅")
     print("Dangerous: ❌")
     print("Visited: 👁️")
-    
+
     while agent.alive and not agent.out and not agent.is_exit:
         print(f"🏚️ Agent's current location: {agent.location}")
         print(f"↗️ Agent's current direction: {agent.direction}")
@@ -49,12 +51,14 @@ def main():
 
         'B2: agent chọn hành động'
         action = agent.select_action()
+        number_of_actions += 1
 
         'B3: Cập nhật trạng thái'
         world.update_world(action=action)
 
     print("🎯 Game Over!")
     print(f"💯 Final Score: {agent.score}")
+    print(f"Number of actions: {number_of_actions}")
 
 if __name__ == "__main__":
     main()
