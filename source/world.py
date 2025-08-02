@@ -165,7 +165,7 @@ class WumpusWorld:
             # nếu rơi vào hố hoặc gặp wumpus thì chết
             cell = self.listCells[new_x][new_y]
             if cell.getPit() or cell.getWumpus():
-                print(" Agent đã chết!")
+                print(" Agent is dead!")
                 self.agent.die()
                 
             # an toàn → cập nhật ~Wxy và ~Pxy vào KB
@@ -208,7 +208,7 @@ class WumpusWorld:
             self.agent.climb_out()
 
         elif action == "e":
-            self.agent.exit = True
+            self.agent.exit()
 
         if self.moving_wumpus:
             self.counter += 1
@@ -217,7 +217,7 @@ class WumpusWorld:
     
     # debug 
     def printWorld(self)-> None:
-        print("\n========== WUMPUS WORLD ==========")
+        print("\n👽👽👽👽👽 WUMPUS WORLD 👽👽👽👽👽")
         for y in reversed(range(self.size)):  # y từ cao xuống thấp (hàng trên xuống hàng dưới)
             row = ""
             for x in range(self.size):        # x từ trái sang phải

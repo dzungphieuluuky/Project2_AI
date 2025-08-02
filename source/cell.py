@@ -88,21 +88,21 @@ class Cell:
     def printTile(self) -> str:
         string = ''
         if self.__isPit:
-            string += 'Pit'
+            string += '🫓 '
         if self.__isBreeze:
-            string += 'Breeze'
+            string += '💨 '
         if self.__isWumpus:
-            string += 'Wumpus'
+            string += '👻 '
         if self.__isStench:
-            string += 'Stench'
+            string += '💩 '
         if self.__isGold:
-            string += 'Gold'
+            string += '🥇 '
         if self.__isPlayer:
-            string += 'Agent'
+            string += '🤖 '
         if self._safe:
-            string += 'Safe'
+            string += '✅ '
         if self._dangerous:
-            string += 'Dangerous'
+            string += '❌ '
         if self.__visited:
-            string += 'Visited'
+            string += '👁️ '
         return string

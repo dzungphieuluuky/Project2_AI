@@ -13,10 +13,10 @@ class Agent:
         self.score = 0
         self.alive = True
         self.out = False  # đã ra khỏi hang chưa
-        self.exit = False # chưa exit game
+        self.is_exit = False # chưa exit game
         self.DIRECTIONS = ["UP", "RIGHT", "DOWN", "LEFT"]  # theo thứ tự quay phải
-        self.actions = [self.turn_left, self.turn_right, self.move_forward,
-                        self.grab, self.shoot, self.climb_out]
+        self.actions = ["forward", "left", "right", "grab", "shoot", "climb", "exit"]
+        self.selected_action = "None"
         self.is_random = random
 
         self.known_cells = []
@@ -64,6 +64,9 @@ class Agent:
             self.out = True
             self.score += 1000 * self.has_gold
     
+    def exit(self):
+        self.is_exit = True
+    
     def die(self) -> None:
         self.alive = False
         self.score -= 1000
@@ -81,14 +84,31 @@ class Agent:
         self.kb.infer_safe_and_dangerous_cells(self.known_cells)
 
     def show_knowledge(self):
+        print("💡 Knowledge Base:")
         print(self.kb.clauses)
     
     def select_action(self) -> str:
         if self.is_random:
             action = random.sample(['f', 'l', 'r', 'g', 's', 'c', 'e'], k=1)[0]
-            return action
         else:
             action = input("Hành động (forward / left / right / grab / shoot / climb / exit): ").strip().lower()
             if action not in ['f', 'l', 'r', 'g', 's', 'c', 'e']:
                 action = None
-            return action
+                self.selected_action = "None"
+        if action == "f":
+            self.selected_action = "forward"
+        elif action == "l":
+            self.selected_action = "turn left"
+        elif action == "r":
+            self.selected_action = "turn right"
+        elif action == "g":
+            self.selected_action = "grab gold"
+        elif action == "s":
+            self.selected_action = "shoot"
+        elif action == "c":
+            self.selected_action = "climb out"
+        elif action == "e":
+            self.selected_action = "exit"
+        return action
+        
+        
