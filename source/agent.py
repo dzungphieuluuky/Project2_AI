@@ -1,5 +1,8 @@
+import random
+
 from knowledge_base import KnowledgeBase
 from planning import Planner
+
 
 class Agent:
     def __init__(self, start=(0, 0), random=False) -> None:
@@ -10,6 +13,7 @@ class Agent:
         self.score = 0
         self.alive = True
         self.out = False  # đã ra khỏi hang chưa
+        self.exit = False # chưa exit game
         self.DIRECTIONS = ["UP", "RIGHT", "DOWN", "LEFT"]  # theo thứ tự quay phải
         self.actions = [self.turn_left, self.turn_right, self.move_forward,
                         self.grab, self.shoot, self.climb_out]
@@ -76,3 +80,15 @@ class Agent:
         self.kb.full_resolution_closure()
         self.kb.infer_safe_and_dangerous_cells(self.known_cells)
 
+    def show_knowledge(self):
+        print(self.kb.clauses)
+    
+    def select_action(self) -> str:
+        if self.is_random:
+            action = random.sample(['f', 'l', 'r', 'g', 's', 'c', 'e'], k=1)[0]
+            return action
+        else:
+            action = input("Hành động (forward / left / right / grab / shoot / climb / exit): ").strip().lower()
+            if action not in ['f', 'l', 'r', 'g', 's', 'c', 'e']:
+                action = None
+            return action

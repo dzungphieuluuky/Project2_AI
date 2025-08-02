@@ -10,10 +10,13 @@ class WumpusWorld:
         self.p = pit_prob
         self.counter = 0
         self.moving_wumpus = moving_wumpus
+        self.scream_flag = False
+        self.bump_flag = False
 
         self.listCells = [[Cell(x, y) for x in range(size)] for y in range(size)]
         self.agent = agent
         self.agent.known_cells.append(self.listCells[0][0])
+        self.listCells[0][0].setPlayer()
         #self.doorPos = (0, 0)
 
         # (0,0) luôn an toàn
@@ -54,6 +57,15 @@ class WumpusWorld:
                 if self.listCells[x][y].getWumpus():
                     for nx, ny in self.get_Adjacents(x, y):
                         self.listCells[nx][ny].setStench()
+    def generate_bump(self):
+        self.bump_flag = True
+    
+    def generate_scream(self):
+        self.scream_flag = True
+    
+    def reset_scream_bump(self):
+        self.bump_flag = False
+        self.scream_flag = False
 
     def tell_agent_percept(self) -> dict:
         """Lấy percept tại vị trí agent hiện tại"""
@@ -63,8 +75,8 @@ class WumpusWorld:
             "breeze": tile.getBreeze(),
             "stench": tile.getStench(),
             "glitter": tile.getGold(),
-            "bump": False,  # chưa xử lý tường
-            "scream": False  # được xử lý khi bắn trúng Wumpus
+            "bump": self.bump_flag,  # chưa xử lý tường
+            "scream": self.scream_flag  # được xử lý khi bắn trúng Wumpus
         }
 
     def tell_agent_adjacent_cells(self) -> None:
@@ -133,6 +145,76 @@ class WumpusWorld:
             
             if new_wumpus_pos == self.agent.location:
                 self.agent.die()
+    
+    def update_world(self, action) -> None:
+        if action is None:
+            print("Hành động không hợp lệ")
+            return
+        
+        elif action == "f":
+            old_pos = self.agent.location
+            self.agent.move_forward()
+            new_x, new_y = new_pos = self.agent.location
+
+            # bump nếu ra ngoài
+            if not (0 <= new_x < self.size and 0 <= new_y < self.size):
+                self.agent.location = old_pos
+                self.generate_bump()
+                return
+
+            # nếu rơi vào hố hoặc gặp wumpus thì chết
+            cell = self.listCells[new_x][new_y]
+            if cell.getPit() or cell.getWumpus():
+                print(" Agent đã chết!")
+                self.agent.die()
+                
+            # an toàn → cập nhật ~Wxy và ~Pxy vào KB
+            self.agent.update_kb()
+
+            self.movePlayer(old_pos, new_pos)
+
+        elif action == "l":
+            self.agent.turn_left()
+
+        elif action == "r":
+            self.agent.turn_right()
+
+        elif action == "g":
+            x, y = self.agent.location
+            if self.grabGold(x, y):
+                self.agent.grab()
+
+        elif action == "s":
+            if self.agent.shoot():
+                dx, dy = 0, 0
+                if self.agent.direction == "UP":
+                    dx, dy = 0, 1
+                elif self.agent.direction == "DOWN":
+                    dx, dy = 0, -1
+                elif self.agent.direction == "LEFT":
+                    dx, dy = -1, 0
+                elif self.agent.direction == "RIGHT":
+                    dx, dy = 1, 0
+
+                x, y = self.agent.location
+                while 0 <= x + dx < self.size and 0 <= y + dy < self.size:
+                    x += dx
+                    y += dy
+                    if self.killWumpus(x, y):
+                        self.generate_scream()
+                        break
+
+        elif action == "c":
+            self.agent.climb_out()
+
+        elif action == "e":
+            self.agent.exit = True
+
+        if self.moving_wumpus:
+            self.counter += 1
+            if self.counter % 5 == 0:
+                self.move_all_wumpuses()
+    
     # debug 
     def printWorld(self)-> None:
         print("\n========== WUMPUS WORLD ==========")
