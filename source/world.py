@@ -15,6 +15,7 @@ class WumpusWorld:
 
         self.listCells = [[Cell(x, y) for x in range(size)] for y in range(size)]
         self.agent = agent
+        self.agent.world_size = size
         self.agent.known_cells.append(self.listCells[0][0])
         self.listCells[0][0].setPlayer()
         #self.doorPos = (0, 0)

@@ -106,3 +106,7 @@ class Cell:
         if self.__visited:
             string += '👁️ '
         return string
+    
+    def reset_safety_status(self) -> None:
+        self._safe = False
+        self._dangerous = False

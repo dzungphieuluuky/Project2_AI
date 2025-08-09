@@ -3,16 +3,23 @@ from world import WumpusWorld
 from knowledge_base import KnowledgeBase
 
 def main():
+    world_size = input("World Size? (a number or None): ").lower()
+    if world_size == "none":
+        world_size = 8
+    else: 
+        world_size = int(world_size)
+
     random_agent_input = input("Random Agent (y/n)? ").lower()
     if (random_agent_input == "y"):
         agent = Agent(random=True)
     else:
         agent = Agent(random=False)
+
     wumpus_moving_input = input("Moving Wumpus (y/n)? ").lower()
     if (wumpus_moving_input == "y"):
-        world = WumpusWorld(agent=agent, moving_wumpus=True)
+        world = WumpusWorld(size=world_size, agent=agent, moving_wumpus=True)
     else:
-        world = WumpusWorld(agent=agent, moving_wumpus=False)
+        world = WumpusWorld(size=world_size, agent=agent, moving_wumpus=False)
     
     number_of_actions = 0
 
@@ -31,7 +38,7 @@ def main():
     while agent.alive and not agent.out and not agent.is_exit:
         print(f"🏚️ Agent's current location: {agent.location}")
         print(f"↗️ Agent's current direction: {agent.direction}")
-        print(f"🦾 Action taken: {agent.selected_action}")
+        print(f"🦾 Action selected: {agent.selected_action}")
         print(f"💯 Score: {agent.score}")
         print(f"🪙 Gold: {agent.has_gold}")
         print(f"🏹 Arrow: {agent.has_arrow}")
@@ -46,8 +53,6 @@ def main():
         world.update_agent_known_cells()
         agent.infer_surrounding_cells()
 
-        world.printWorld()
-        agent.show_knowledge()
 
         'B2: agent chọn hành động'
         action = agent.select_action()
@@ -55,6 +60,11 @@ def main():
 
         'B3: Cập nhật trạng thái'
         world.update_world(action=action)
+        agent.visited_locations.add(agent.location)
+
+        'B4: show world and knowledge'
+        world.printWorld()
+        agent.show_knowledge()
 
     print("🎯 Game Over!")
     print(f"💯 Final Score: {agent.score}")
