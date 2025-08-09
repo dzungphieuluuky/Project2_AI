@@ -10,8 +10,16 @@ class Cell:
         self._safe = False
         self._dangerous = False
         self.__visited = False
+        self.name_state = ["Pit", "Breeze", "Wumpus", "Stench",
+                          "Gold", "Player", "Safe", "Dangerous", "Visited"]
         self.location = (x, y)
 
+    def states(self):
+        return [
+            self.__isPit, self.__isBreeze, self.__isWumpus, self.__isStench,
+            self.__isGold, self.__isPlayer, self._safe, self._dangerous, self.__visited
+        ]
+    
     # Getters
     def getPit(self) -> bool:
         return self.__isPit

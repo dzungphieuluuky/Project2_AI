@@ -11,15 +11,13 @@ class Agent:
         self.score = 0
         self.alive = True
         self.out = False  # đã ra khỏi hang chưa
-        self.is_exit = False # chưa exit game
         self.DIRECTIONS = ["UP", "RIGHT", "DOWN", "LEFT"]  # theo thứ tự quay phải
-        self.actions = {"f": "forward", 
-                        "l": "turn left", 
-                        "r": "turn right", 
-                        "g": "grab", 
-                        "s": "shoot", 
-                        "c": "climb", 
-                        "e": "exit"}
+        self.actions = {"f": "Move Forward", 
+                        "l": "Turn Left", 
+                        "r": "Turn Right", 
+                        "g": "Grab", 
+                        "s": "Shoot", 
+                        "c": "Climb Out"}
         self.selected_action = "None"
         self.is_random = random
 
@@ -71,9 +69,6 @@ class Agent:
         if self.location == (0, 0):
             self.out = True
             self.score += 1000 * self.has_gold
-    
-    def exit(self):
-        self.is_exit = True
     
     def die(self) -> None:
         self.alive = False
@@ -195,8 +190,9 @@ class Agent:
             
     
     def select_action(self):
+        # if agent is random
         if self.is_random:
-            return random.choice(['f', 'l', 'r', 'g', 's', 'c', 'e'])
+            return random.choice([key for key in self.actions.keys()])
         
         # Priority 1: If Glitter is present, grab it.
         if self.percepts.get("glitter", False):
@@ -214,10 +210,6 @@ class Agent:
             if move:
                 self.selected_action = f"Move towards (0,0): {self.actions[move]}"
                 return move
-            else: 
-                print("[DEBUG] Path to (0,0) blocked. Climbing from current location.")
-                self.selected_action = "climb"
-                return "c"
 
 
         # Priority 3: Find the best guaranteed safe, unvisited cell and move there.
@@ -252,7 +244,3 @@ class Agent:
         if move:
             self.selected_action = f"Retreat to (0,0): {self.actions[move]}"
             return move
-
-        print("[DEBUG] Cannot find path to (0,0). Climbing from current location.")
-        self.selected_action = "climb"
-        return "c"
