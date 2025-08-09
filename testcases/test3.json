@@ -1,9 +1,9 @@
 {
     "world_size": 8,
     "num_wumpus": 2,
-    "moving_wumpus": true,
     "pit_prob": 0.2,
     "random_agent": false,
+    "moving_wumpus": true,
     "agent_action_log": [
         "Climb Out"
     ],

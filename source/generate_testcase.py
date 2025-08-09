@@ -1,4 +1,5 @@
 from main import *
+import json
 
 file_name = input("Testcase file name: ")
 game_config = main()

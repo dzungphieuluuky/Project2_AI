@@ -1,5 +1,4 @@
 from agent import Agent
-import json
 from world import WumpusWorld
 
 def main():
@@ -103,9 +102,9 @@ def main():
     return {
         "world_size": world.size,
         "num_wumpus": world.numWumpus,
-        "moving_wumpus": world.moving_wumpus,
         "pit_prob": world.p,
         "random_agent": random_agent_input,
+        "moving_wumpus": world.moving_wumpus,
         "agent_action_log": agent_actions,
         "initial_state": initial_state,
         "final_state": final_state

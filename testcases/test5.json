@@ -1,9 +1,9 @@
 {
     "world_size": 16,
     "num_wumpus": 3,
-    "moving_wumpus": false,
     "pit_prob": 0.3,
     "random_agent": true,
+    "moving_wumpus": false,
     "agent_action_log": [
         "Turn Left",
         "Turn Right",
