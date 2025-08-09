@@ -3,11 +3,17 @@ from world import WumpusWorld
 from knowledge_base import KnowledgeBase
 
 def main():
-    world_size = input("World Size? (a number or None): ").lower()
-    if world_size == "none":
+    world_size = input("World Size? (a number/enter to use default): ").lower()
+    if len(world_size) == 0:
         world_size = 8
     else: 
         world_size = int(world_size)
+
+    num_wumpus = input("Number of Wumpus (a number/enter to use default): ").lower()
+    if len(num_wumpus) == 0:
+        num_wumpus = 2
+    else:
+        num_wumpus = int(num_wumpus)
 
     random_agent_input = input("Random Agent (y/n)? ").lower()
     if (random_agent_input == "y"):
@@ -17,9 +23,9 @@ def main():
 
     wumpus_moving_input = input("Moving Wumpus (y/n)? ").lower()
     if (wumpus_moving_input == "y"):
-        world = WumpusWorld(size=world_size, agent=agent, moving_wumpus=True)
+        world = WumpusWorld(size=world_size, num_wumpus=num_wumpus, agent=agent, moving_wumpus=True)
     else:
-        world = WumpusWorld(size=world_size, agent=agent, moving_wumpus=False)
+        world = WumpusWorld(size=world_size, num_wumpus=num_wumpus, agent=agent, moving_wumpus=False)
     
     number_of_actions = 0
 
