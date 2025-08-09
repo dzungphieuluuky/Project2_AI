@@ -37,6 +37,13 @@ def main():
         wumpus_moving_input = False
         world = WumpusWorld(size=world_size, num_wumpus=num_wumpus, pit_prob=pit_prob, agent=agent, moving_wumpus=False)
     
+    # get initial state
+    initial_state = {}
+    for cell_row in world.listCells:
+        for cell in cell_row:
+            list_state = [cell.name_state[i] for i, state in enumerate(cell.states()) if state]
+            initial_state[str(cell.location)] = list_state
+
     agent_actions = []
 
     print("GAME STARTED")
@@ -86,6 +93,7 @@ def main():
     print(f"💯 Final Score: {agent.score}")
     print(f"Number of actions: {len(agent_actions)}")
 
+    # get final state
     final_state = {}
     for cell_row in world.listCells:
         for cell in cell_row:
@@ -99,6 +107,7 @@ def main():
         "pit_prob": world.p,
         "random_agent": random_agent_input,
         "agent_action_log": agent_actions,
+        "initial_state": initial_state,
         "final_state": final_state
     }
 

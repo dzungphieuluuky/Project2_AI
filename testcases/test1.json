@@ -1,86 +1,34 @@
 {
     "world_size": 8,
     "num_wumpus": 2,
-    "moving_wumpus": false,
+    "moving_wumpus": true,
     "pit_prob": 0.2,
-    "random_agent": false,
+    "random_agent": true,
     "agent_action_log": [
+        "Turn Right",
         "Turn Left",
-        "Move Forward",
-        "Turn Right",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Turn Right",
-        "Turn Right",
-        "Move Forward",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Turn Right",
-        "Move Forward",
-        "Turn Right",
-        "Turn Right",
-        "Move Forward",
-        "Turn Right",
-        "Move Forward",
-        "Move Forward",
-        "Turn Right",
-        "Turn Right",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Move Forward",
-        "Turn Right",
-        "Turn Right",
-        "Move Forward",
-        "Turn Right",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Turn Right",
-        "Move Forward",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Move Forward",
-        "Turn Left",
-        "Move Forward",
-        "Move Forward",
-        "Move Forward",
-        "Turn Right",
-        "Turn Right",
-        "Move Forward",
-        "Move Forward",
-        "Move Forward",
+        "Grab",
         "Climb Out"
     ],
-    "final_state": {
+    "initial_state": {
         "(0, 0)": [
+            "Breeze",
             "Player",
             "Safe",
             "Visited"
         ],
         "(1, 0)": [
-            "Safe",
-            "Visited"
+            "Pit",
+            "Breeze"
         ],
         "(2, 0)": [
-            "Breeze",
-            "Safe",
-            "Visited"
+            "Breeze"
         ],
         "(3, 0)": [
-            "Pit",
-            "Breeze",
-            "Safe"
+            "Breeze"
         ],
         "(4, 0)": [
-            "Breeze"
+            "Pit"
         ],
         "(5, 0)": [
             "Breeze"
@@ -88,111 +36,78 @@
         "(6, 0)": [
             "Breeze"
         ],
-        "(7, 0)": [
-            "Pit"
-        ],
+        "(7, 0)": [],
         "(0, 1)": [
-            "Safe",
-            "Visited"
+            "Breeze"
         ],
         "(1, 1)": [
-            "Safe",
-            "Visited"
+            "Pit",
+            "Breeze"
         ],
         "(2, 1)": [
-            "Breeze",
-            "Safe",
-            "Visited"
+            "Breeze"
         ],
-        "(3, 1)": [
-            "Pit",
-            "Breeze",
-            "Safe"
-        ],
+        "(3, 1)": [],
         "(4, 1)": [
             "Breeze"
         ],
         "(5, 1)": [
-            "Pit"
+            "Breeze"
         ],
         "(6, 1)": [
-            "Breeze"
+            "Pit"
         ],
         "(7, 1)": [
             "Breeze"
         ],
-        "(0, 2)": [
-            "Safe",
-            "Visited"
-        ],
+        "(0, 2)": [],
         "(1, 2)": [
-            "Safe",
-            "Visited"
+            "Breeze"
         ],
         "(2, 2)": [
-            "Safe",
-            "Visited"
+            "Pit",
+            "Breeze"
         ],
         "(3, 2)": [
-            "Breeze",
-            "Safe",
-            "Visited"
-        ],
-        "(4, 2)": [
-            "Breeze",
-            "Safe"
-        ],
-        "(5, 2)": [
             "Breeze"
         ],
+        "(4, 2)": [],
+        "(5, 2)": [],
         "(6, 2)": [
-            "Pit"
-        ],
-        "(7, 2)": [
             "Breeze"
         ],
+        "(7, 2)": [],
         "(0, 3)": [
-            "Dangerous",
-            "Visited"
+            "Breeze"
         ],
         "(1, 3)": [
-            "Breeze",
-            "Dangerous",
-            "Visited"
+            "Breeze"
         ],
         "(2, 3)": [
-            "Safe",
-            "Visited"
+            "Pit",
+            "Breeze"
         ],
         "(3, 3)": [
-            "Breeze",
-            "Safe",
-            "Visited"
+            "Breeze"
         ],
         "(4, 3)": [
-            "Pit",
             "Stench"
         ],
-        "(5, 3)": [
-            "Breeze"
-        ],
-        "(6, 3)": [
-            "Breeze"
-        ],
-        "(7, 3)": [
-            "Pit"
-        ],
+        "(5, 3)": [],
+        "(6, 3)": [],
+        "(7, 3)": [],
         "(0, 4)": [
+            "Pit",
             "Breeze"
         ],
         "(1, 4)": [
-            "Pit"
+            "Breeze"
         ],
         "(2, 4)": [
-            "Breeze",
-            "Visited"
+            "Breeze"
         ],
         "(3, 4)": [
+            "Pit",
             "Stench"
         ],
         "(4, 4)": [
@@ -200,43 +115,36 @@
             "Wumpus"
         ],
         "(5, 4)": [
-            "Pit",
-            "Breeze",
             "Stench"
         ],
-        "(6, 4)": [
-            "Pit",
-            "Breeze"
-        ],
+        "(6, 4)": [],
         "(7, 4)": [
             "Breeze"
         ],
         "(0, 5)": [
-            "Pit"
+            "Pit",
+            "Breeze"
         ],
         "(1, 5)": [
             "Breeze"
         ],
         "(2, 5)": [
-            "Breeze",
-            "Gold"
+            "Breeze"
         ],
         "(3, 5)": [
             "Breeze"
         ],
         "(4, 5)": [
-            "Stench"
-        ],
-        "(5, 5)": [
-            "Breeze"
-        ],
-        "(6, 5)": [
-            "Pit",
             "Breeze",
             "Stench"
         ],
-        "(7, 5)": [
+        "(5, 5)": [],
+        "(6, 5)": [
             "Breeze"
+        ],
+        "(7, 5)": [
+            "Pit",
+            "Stench"
         ],
         "(0, 6)": [
             "Breeze"
@@ -245,25 +153,24 @@
             "Breeze"
         ],
         "(2, 6)": [
-            "Pit",
-            "Breeze"
+            "Pit"
         ],
         "(3, 6)": [
-            "Pit",
             "Breeze"
         ],
         "(4, 6)": [
-            "Breeze"
+            "Pit"
         ],
         "(5, 6)": [
-            "Stench"
+            "Breeze"
         ],
         "(6, 6)": [
-            "Breeze",
-            "Wumpus"
+            "Pit",
+            "Stench"
         ],
         "(7, 6)": [
-            "Stench"
+            "Breeze",
+            "Wumpus"
         ],
         "(0, 7)": [
             "Pit"
@@ -272,19 +179,207 @@
             "Breeze"
         ],
         "(2, 7)": [
-            "Breeze"
+            "Breeze",
+            "Gold"
         ],
         "(3, 7)": [
-            "Pit",
-            "Breeze"
+            "Pit"
         ],
         "(4, 7)": [
             "Breeze"
         ],
         "(5, 7)": [],
         "(6, 7)": [
+            "Breeze"
+        ],
+        "(7, 7)": [
+            "Stench"
+        ]
+    },
+    "final_state": {
+        "(0, 0)": [
+            "Breeze",
+            "Player",
+            "Safe",
+            "Visited"
+        ],
+        "(1, 0)": [
+            "Pit",
+            "Breeze"
+        ],
+        "(2, 0)": [
+            "Breeze"
+        ],
+        "(3, 0)": [
+            "Breeze"
+        ],
+        "(4, 0)": [
+            "Pit"
+        ],
+        "(5, 0)": [
+            "Breeze"
+        ],
+        "(6, 0)": [
+            "Breeze"
+        ],
+        "(7, 0)": [],
+        "(0, 1)": [
+            "Breeze"
+        ],
+        "(1, 1)": [
+            "Pit",
+            "Breeze"
+        ],
+        "(2, 1)": [
+            "Breeze"
+        ],
+        "(3, 1)": [],
+        "(4, 1)": [
+            "Breeze"
+        ],
+        "(5, 1)": [
+            "Breeze"
+        ],
+        "(6, 1)": [
+            "Pit"
+        ],
+        "(7, 1)": [
+            "Breeze"
+        ],
+        "(0, 2)": [],
+        "(1, 2)": [
+            "Breeze"
+        ],
+        "(2, 2)": [
+            "Pit",
+            "Breeze"
+        ],
+        "(3, 2)": [
+            "Breeze"
+        ],
+        "(4, 2)": [],
+        "(5, 2)": [],
+        "(6, 2)": [
+            "Breeze"
+        ],
+        "(7, 2)": [],
+        "(0, 3)": [
+            "Breeze"
+        ],
+        "(1, 3)": [
+            "Breeze"
+        ],
+        "(2, 3)": [
+            "Pit",
+            "Breeze"
+        ],
+        "(3, 3)": [
+            "Breeze"
+        ],
+        "(4, 3)": [
             "Stench"
         ],
-        "(7, 7)": []
+        "(5, 3)": [],
+        "(6, 3)": [],
+        "(7, 3)": [],
+        "(0, 4)": [
+            "Pit",
+            "Breeze"
+        ],
+        "(1, 4)": [
+            "Breeze"
+        ],
+        "(2, 4)": [
+            "Breeze"
+        ],
+        "(3, 4)": [
+            "Pit",
+            "Stench"
+        ],
+        "(4, 4)": [
+            "Breeze",
+            "Wumpus"
+        ],
+        "(5, 4)": [
+            "Stench"
+        ],
+        "(6, 4)": [],
+        "(7, 4)": [
+            "Breeze"
+        ],
+        "(0, 5)": [
+            "Pit",
+            "Breeze"
+        ],
+        "(1, 5)": [
+            "Breeze"
+        ],
+        "(2, 5)": [
+            "Breeze"
+        ],
+        "(3, 5)": [
+            "Breeze"
+        ],
+        "(4, 5)": [
+            "Breeze",
+            "Stench"
+        ],
+        "(5, 5)": [],
+        "(6, 5)": [
+            "Breeze"
+        ],
+        "(7, 5)": [
+            "Pit",
+            "Stench"
+        ],
+        "(0, 6)": [
+            "Breeze"
+        ],
+        "(1, 6)": [
+            "Breeze"
+        ],
+        "(2, 6)": [
+            "Pit"
+        ],
+        "(3, 6)": [
+            "Breeze"
+        ],
+        "(4, 6)": [
+            "Pit"
+        ],
+        "(5, 6)": [
+            "Breeze"
+        ],
+        "(6, 6)": [
+            "Pit",
+            "Stench"
+        ],
+        "(7, 6)": [
+            "Breeze",
+            "Wumpus"
+        ],
+        "(0, 7)": [
+            "Pit"
+        ],
+        "(1, 7)": [
+            "Breeze"
+        ],
+        "(2, 7)": [
+            "Breeze",
+            "Gold"
+        ],
+        "(3, 7)": [
+            "Pit"
+        ],
+        "(4, 7)": [
+            "Breeze"
+        ],
+        "(5, 7)": [],
+        "(6, 7)": [
+            "Breeze"
+        ],
+        "(7, 7)": [
+            "Stench"
+        ]
     }
 }
