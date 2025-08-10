@@ -1,6 +1,6 @@
 from cell import Cell
 from agent import Agent
-from random import randrange, random, sample
+from random import randrange, random, sample, choice
 
 class WumpusWorld:
     def __init__(self, agent: Agent, size=8, num_wumpus=2, pit_prob=0.2, moving_wumpus = False) -> None:
@@ -50,6 +50,11 @@ class WumpusWorld:
         self._generate_percepts()
 
     def _generate_percepts(self) -> None:
+        # xoá các stench cũ
+        for x in range(self.size):
+            for y in range(self.size):
+                self.listCells[x][y].removeStench()
+
         for x in range(self.size):
             for y in range(self.size):
                 if self.listCells[x][y].getPit():
@@ -58,6 +63,7 @@ class WumpusWorld:
                 if self.listCells[x][y].getWumpus():
                     for nx, ny in self.get_Adjacents(x, y):
                         self.listCells[nx][ny].setStench()
+
     def generate_bump(self):
         self.bump_flag = True
     
@@ -132,21 +138,43 @@ class WumpusWorld:
         # Add to new position
         self.listCells[tx][ty].setPlayer()
         self.listCells[tx][ty].setVisited()  # mark as visited
-    
-    def move_all_wumpuses(self):
-        for (i, j) in self.wumpus_positions:
-            old_wumpus_pos = (i, j)
-            wumpus_adj_cells = self.get_Adjacents(i, j)
-            new_wumpus_pos = sample(wumpus_adj_cells, k=1)[0]
-            new_x, new_y = new_wumpus_pos
 
-            "Need check to wall collision"
+    def move_all_wumpuses(self):
+        new_positions = []  
+        planned_moves = {} 
+
+        # Plan ô tiếp theo mõi wumpus di chuyển tới
+        for (i, j) in self.wumpus_positions:
+            old_pos = (i, j)
+            wumpus_adj_cells = self.get_Adjacents(i, j)
+
+            new_pos = choice(wumpus_adj_cells)
+            new_x, new_y = new_pos
+
             if self.listCells[new_x][new_y].getWumpus() or self.listCells[new_x][new_y].getPit():
-                new_wumpus_pos = old_wumpus_pos
-            
-            if new_wumpus_pos == self.agent.location:
+                new_pos = old_pos
+
+            planned_moves[old_pos] = new_pos
+
+        # Cập nhật wumpus ở ô mới
+        for old_pos, new_pos in planned_moves.items():
+            i, j = old_pos
+            new_x, new_y = new_pos
+
+            self.listCells[i][j].removeWumpus()
+
+        for old_pos, new_pos in planned_moves.items():
+            new_x, new_y = new_pos
+
+            if new_pos == self.agent.location:
                 self.agent.die()
-    
+
+            self.listCells[new_x][new_y].setWumpus()
+            new_positions.append(new_pos)
+
+        self.wumpus_positions = new_positions
+        self._generate_percepts()
+
     def update_world(self, action) -> None:
         if action is None:
             print("Not a valid action!")

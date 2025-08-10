@@ -90,6 +90,9 @@ class Cell:
     
     def removePlayer(self) -> None:
         self.__isPlayer = False
+    
+    def removeBreeze(self) -> None:
+        self.__isBreeze = False
 
     ################################# DEBUGGING #################################
     
