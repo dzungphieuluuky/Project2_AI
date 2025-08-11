@@ -1,6 +1,7 @@
 from cell import Cell
 from agent import Agent
 from random import randrange, random, sample, choice
+from collections import defaultdict
 
 class WumpusWorld:
     def __init__(self, agent: Agent, size=8, num_wumpus=2, pit_prob=0.2, moving_wumpus = False) -> None:
@@ -128,38 +129,36 @@ class WumpusWorld:
         self.listCells[tx][ty].setVisited()  # mark as visited
 
     def move_all_wumpus(self):
-        new_positions = []  
-        planned_moves = {} 
+        planned_moves = {}
+        new_positions = []
 
-        # Plan ô tiếp theo mõi wumpus di chuyển tới
-        for (i, j) in self.wumpus_positions:
-            old_pos = (i, j)
-            wumpus_adj_cells = self.get_Adjacents(i, j)
+        #B1: tìm ô phù hợp tiếp theo để đi, nếu có pit thì đứng yên
+        for pos in self.wumpus_positions:
+            possible_adj_cells = self.get_Adjacents(pos[0], pos[1])
+            if possible_adj_cells:
+                new_pos = choice(possible_adj_cells)
+                if self.listCells[new_pos[0]][new_pos[1]].getPit():
+                    planned_moves[pos] = pos
+                else:
+                    planned_moves[pos] = new_pos
+            else:
+                planned_moves[pos] = pos
+                
+        #B2: check coi có overlap với wumpus khác ko
+        selected_positions = set()
+        for pos in self.wumpus_positions:
+            new_pos = planned_moves.get(pos, pos)
 
-            new_pos = choice(wumpus_adj_cells)
-            new_x, new_y = new_pos
+            # nếu newpos đã bị wumpus khác chọn ròi thì đứng yên
+            if new_pos in selected_positions:
+                new_pos = pos
+            
+            self.listCells[pos[0]][pos[1]].removeWumpus()
+            self.listCells[new_pos[0]][new_pos[1]].setWumpus()
 
-            if self.listCells[new_x][new_y].getWumpus() or self.listCells[new_x][new_y].getPit():
-                new_pos = old_pos
-
-            planned_moves[old_pos] = new_pos
-
-        # Cập nhật wumpus ở ô mới
-        for old_pos, new_pos in planned_moves.items():
-            i, j = old_pos
-            new_x, new_y = new_pos
-
-            self.listCells[i][j].removeWumpus()
-
-        for old_pos, new_pos in planned_moves.items():
-            new_x, new_y = new_pos
-
-            if new_pos == self.agent.location:
-                self.agent.die()
-
-            self.listCells[new_x][new_y].setWumpus()
             new_positions.append(new_pos)
-
+            selected_positions.add(new_pos)
+        
         self.wumpus_positions = new_positions
         self._generate_percepts()
 
@@ -184,6 +183,8 @@ class WumpusWorld:
             if cell.getPit() or cell.getWumpus():
                 print("💀 Agent is dead!")
                 self.agent.die()
+                self.movePlayer(old_pos, new_pos)
+                return
                 
             # an toàn → cập nhật ~Wxy và ~Pxy vào KB
             self.agent.update_kb()

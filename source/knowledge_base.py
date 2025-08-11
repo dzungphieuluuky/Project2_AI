@@ -161,4 +161,4 @@ class KnowledgeBase:
             if cell.location == (x, y):
                 cell.markSafe()
                 break
-        print("AAAAA")
+        print("Notice that Wumpus is no longer around here")

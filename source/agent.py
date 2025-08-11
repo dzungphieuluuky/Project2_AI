@@ -112,13 +112,15 @@ class Agent:
     def tell(self) -> None:
         self.adjacent_cells = self.get_adjacent_cells()
         self.kb.tell(self.percepts, self.location, self.adjacent_cells)
-        
+
         if self.has_just_shoot:
             self.kb.percepts_after_shoot(self.location, self.direction, self.percepts, 
                                          self.known_cells, self.world_size)
             self.has_just_shoot = False
     
     def update_kb(self) -> None:
+        if not self.alive:
+            return
         x, y = self.location
         self.kb.add_clause({f"~P{x}{y}"})
         self.kb.add_clause({f"~W{x}{y}"})
