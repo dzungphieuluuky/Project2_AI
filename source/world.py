@@ -74,18 +74,6 @@ class WumpusWorld:
         self.bump_flag = False
         self.scream_flag = False
 
-    def tell_agent_percept(self) -> dict:
-        """Lấy percept tại vị trí agent hiện tại"""
-        x, y = self.agent.location
-        tile = self.listCells[x][y]
-        return {
-            "breeze": tile.getBreeze(),
-            "stench": tile.getStench(),
-            "glitter": tile.getGold(),
-            "bump": self.bump_flag,  # chưa xử lý tường
-            "scream": self.scream_flag  # được xử lý khi bắn trúng Wumpus
-        }
-
     def tell_agent_adjacent_cells(self) -> None:
         x, y = self.agent.location
         adjacent_cells = self.get_Adjacents(x, y)
@@ -93,8 +81,8 @@ class WumpusWorld:
     
     def update_agent_known_cells(self) -> None:
         x, y = self.agent.location
-        adjacent_cells = self.get_Adjacents(x, y)
-        for (i, j) in adjacent_cells:
+        self.adjacent_cells = self.get_Adjacents(x, y)
+        for (i, j) in self.adjacent_cells:
             if self.listCells[i][j] not in self.agent.known_cells:
                 self.agent.known_cells.append(self.listCells[i][j])
 
@@ -139,7 +127,7 @@ class WumpusWorld:
         self.listCells[tx][ty].setPlayer()
         self.listCells[tx][ty].setVisited()  # mark as visited
 
-    def move_all_wumpuses(self):
+    def move_all_wumpus(self):
         new_positions = []  
         planned_moves = {} 
 
@@ -175,7 +163,7 @@ class WumpusWorld:
         self.wumpus_positions = new_positions
         self._generate_percepts()
 
-    def update_world(self, action) -> None:
+    def update_world(self, action: str) -> None:
         if action is None:
             print("Not a valid action!")
             return
@@ -237,14 +225,10 @@ class WumpusWorld:
             self.agent.climb_out()
             print("🧗 Agent has climbed out of the map")
 
-        elif action == "e":
-            self.agent.exit()
-            print("🔚 Agent has exitted the map")
-
         if self.moving_wumpus:
             self.counter += 1
             if self.counter % 5 == 0:
-                self.move_all_wumpuses()
+                self.move_all_wumpus()
     
     # debug 
     def printWorld(self)-> None:

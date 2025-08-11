@@ -45,18 +45,26 @@ def main():
 
     agent_actions = []
 
-    print("GAME STARTED")
-    print("Game Symbol Definition:")
-    print("Pit: 🫓")
-    print("Breeze: 💨")
-    print("Wumpus: 👻")
-    print("Stench: 💩")
-    print("Gold: 🥇")
-    print("Agent: 🤖")
-    print("Safe: ✅")
-    print("Dangerous: ❌")
-    print("Visited: 👁️")
+    # Display game symbol
+    print("\n\033[1;33m=== GAME STARTED ===\033[0m\n")
+    print("\033[1;36mGame Symbol Definition:\033[0m")
+    symbols = {
+        "Pit": "🫓",
+        "Breeze": "💨",
+        "Wumpus": "👻",
+        "Stench": "💩",
+        "Gold": "🥇",
+        "Agent": "🤖",
+        "Safe": "✅",
+        "Dangerous": "❌",
+        "Visited": "👁️"
+    }
+    max_len = max(len(k) for k in symbols.keys())
+    for name, icon in symbols.items():
+        print(f"  {name:<{max_len}} : {icon}")
+    print()
 
+    # main loop
     while agent.alive and not agent.out:
         print(f"🏚️ Agent's current location: {agent.location}")
         print(f"↗️ Agent's current direction: {agent.direction}")
@@ -66,23 +74,21 @@ def main():
         print(f"🏹 Arrow: {agent.has_arrow}")
 
         'B1: lấy percept và cập nhật KB'
-        agent.percepts = world.tell_agent_percept()
+        agent.get_percepts_from(world)
         print(f"🧠 Percepts: {agent.percepts}")
         world.reset_scream_bump()
 
-        world.tell_agent_adjacent_cells()
         agent.tell()
         world.update_agent_known_cells()
         agent.infer_surrounding_cells()
 
-
         'B2: agent chọn hành động'
         action = agent.select_action()
-        agent_actions.append(agent.actions[action])
+        agent_actions.append(agent.name_actions[action])
 
         'B3: Cập nhật trạng thái'
         world.update_world(action=action)
-        agent.visited_locations.add(agent.location)
+        agent.update_visited_location()
 
         'B4: show world and knowledge'
         world.printWorld()

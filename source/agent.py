@@ -5,14 +5,17 @@ from planning import Planner
 class Agent:
     def __init__(self, start=(0, 0), random=False) -> None:
         self.location = start
+        self.DIRECTIONS = ["UP", "RIGHT", "DOWN", "LEFT"]  # theo thứ tự quay phải
         self.direction = "RIGHT"  # mặc định quay phải
+
         self.has_arrow = True
         self.has_gold = False
         self.score = 0
         self.alive = True
         self.out = False  # đã ra khỏi hang chưa
-        self.DIRECTIONS = ["UP", "RIGHT", "DOWN", "LEFT"]  # theo thứ tự quay phải
-        self.actions = {"f": "Move Forward", 
+        self.has_just_shoot = False
+
+        self.name_actions = {"f": "Move Forward", 
                         "l": "Turn Left", 
                         "r": "Turn Right", 
                         "g": "Grab", 
@@ -21,8 +24,8 @@ class Agent:
         self.selected_action = "None"
         self.is_random = random
 
-        self.known_cells = []
         self.adjacent_cells = []
+        self.known_cells = []
         self.percepts = {}
         self.unreachable_safe = set()
 
@@ -32,6 +35,25 @@ class Agent:
         self.visited_locations = {start}
         self.world_size = 8
 
+    def get_Adjacents(self, i: int, j: int) -> list[tuple[int, int]]:
+        adj = []
+        if i - 1 >= 0:
+            adj.append((i - 1, j))
+        if i + 1 < self.world_size:
+            adj.append((i + 1, j))
+        if j - 1 >= 0:
+            adj.append((i, j - 1))
+        if j + 1 < self.world_size:
+            adj.append((i, j + 1))
+        return adj
+    
+    def get_adjacent_cells(self) -> list[tuple[int, int]]:
+        i, j = self.location
+        return self.get_Adjacents(i, j)
+    
+    def update_visited_location(self):
+        self.visited_locations.add(self.location)
+    
     def turn_left(self) -> None:
         idx = self.DIRECTIONS.index(self.direction)
         self.direction = self.DIRECTIONS[(idx - 1) % 4]
@@ -61,7 +83,8 @@ class Agent:
     def shoot(self) -> bool:
         if self.has_arrow:
             self.has_arrow = False
-            self.score -= 10 
+            self.has_just_shoot = True
+            self.score -= 10
             return True
         return False
 
@@ -74,8 +97,26 @@ class Agent:
         self.alive = False
         self.score -= 1000
 
+    def get_percepts_from(self, world):
+        """Lấy percept tại vị trí agent hiện tại"""
+        x, y = self.location
+        tile = world.listCells[x][y]
+        return {
+            "breeze": tile.getBreeze(),
+            "stench": tile.getStench(),
+            "glitter": tile.getGold(),
+            "bump": world.bump_flag,  # chưa xử lý tường
+            "scream": world.scream_flag  # được xử lý khi bắn trúng Wumpus
+        }
+    
     def tell(self) -> None:
+        self.adjacent_cells = self.get_adjacent_cells()
         self.kb.tell(self.percepts, self.location, self.adjacent_cells)
+        
+        if self.has_just_shoot:
+            self.kb.percepts_after_shoot(self.location, self.direction, self.percepts, 
+                                         self.known_cells, self.world_size)
+            self.has_just_shoot = False
     
     def update_kb(self) -> None:
         x, y = self.location
@@ -92,7 +133,7 @@ class Agent:
     
     def _count_unknown_neighbors(self, location):
         count = 0; known_locs = {c.location for c in self.known_cells}
-        for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]:
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             nx, ny = location[0] + dx, location[1] + dy
             if 0 <= nx < self.world_size and 0 <= ny < self.world_size and (nx, ny) not in known_locs:
                 count += 1
@@ -179,7 +220,7 @@ class Agent:
             return None  
 
         if self.direction == desired_dir:
-            return "s"  
+            return "s"
     
         idx_cur = self.DIRECTIONS.index(self.direction)
         idx_des = self.DIRECTIONS.index(desired_dir)
@@ -188,37 +229,40 @@ class Agent:
         else: 
             return "r"
             
-    
     def select_action(self):
         # if agent is random
         if self.is_random:
-            return random.choice([key for key in self.actions.keys()])
+            action = random.choice([key for key in self.name_actions.keys()])
+            self.selected_action = self.name_actions[action]
+            return action
         
         # Priority 1: If Glitter is present, grab it.
         if self.percepts.get("glitter", False):
-            print("[DEBUG] Priority 1: Glitter found. Grabbing gold.")
-            self.selected_action = "grab"
-            return "g"
+            print("Priority 1: Glitter found. Grabbing gold.")
+            action = "g"
+            self.selected_action = self.name_actions[action]
+            return action
 
         # Priority 2: If we have the gold, plan a path to (0,0) and climb.
         if self.has_gold:
-            print("[DEBUG] Priority 2: Has gold. Planning path to (0,0).")
+            print("Priority 2: Has gold. Planning path to (0,0).")
             if self.location == (0,0):
-                self.selected_action = "climb"
-                return "c"
+                action = "c"
+                self.selected_action = self.name_actions[action]
+                return action
             move = self.get_next_move_towards((0, 0))
             if move:
-                self.selected_action = f"Move towards (0,0): {self.actions[move]}"
+                self.selected_action = f"Planning to move towards (0,0). Current action: {self.name_actions[move]}"
                 return move
 
 
         # Priority 3: Find the best guaranteed safe, unvisited cell and move there.
         target = self.find_nearest_unvisited_safe()
         if target:
-            print(f"[DEBUG] Priority 3: Found best safe cell {target}. Planning path.")
+            print(f"Priority 3: Found best safe cell {target}. Planning path.")
             move = self.get_next_move_towards(target)
             if move:
-                self.selected_action = f"Explore to {target}: {self.actions[move]}"
+                self.selected_action = f"Planning to explore {target}. Current action: {self.name_actions[move]}"
                 return move
             else:
                 self.unreachable_safe.add(target)
@@ -228,19 +272,20 @@ class Agent:
         if self.has_arrow:
             wumpus_target = self.find_best_wumpus_target()
             if wumpus_target:
-                print(f"[DEBUG] Priority 4: No safe options. Risking shot at suspected Wumpus {wumpus_target}.")
+                print(f"Priority 4: No safe options. Risking shot at suspected Wumpus {wumpus_target}.")
                 move = self.aim_and_shoot(wumpus_target)
                 if move:
-                    self.selected_action = f"Shoot at {wumpus_target}: {self.actions[move]}"
+                    self.selected_action = f"Planning to shoot at {wumpus_target}. Current action: {self.name_actions[move]}"
                     return move
 
         # Priority 5: If completely stuck, retreat to (0,0) and climb out.
-        print("[DEBUG] Priority 5: No other options. Retreating to (0,0) to climb.")
+        print("Priority 5: No other options. Retreating to (0,0) to climb.")
         if self.location == (0, 0):
-            self.selected_action = "climb"
-            return "c"
+            action = "c"
+            self.selected_action = self.name_actions[action]
+            return action
         
         move = self.get_next_move_towards((0, 0))
         if move:
-            self.selected_action = f"Retreat to (0,0): {self.actions[move]}"
+            self.selected_action = f"Retreat to (0,0): {self.name_actions[move]}"
             return move
