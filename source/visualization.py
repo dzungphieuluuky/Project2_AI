@@ -1,365 +1,490 @@
 import pygame
 import sys
+from typing import Union
 from agent import Agent
 from world import WumpusWorld
 
-# Color constants
+# Màu mè 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-BLUE = (0, 100, 255)
-DARK_BLUE = (0, 80, 200)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)
+BLUE = (100, 150, 255)
+RED = (255, 80, 80)
+GREEN = (80, 200, 80)
+YELLOW = (255, 220, 50)
 BROWN = (139, 69, 19)
-PURPLE = (128, 0, 128)
+PURPLE = (150, 110, 200)
 GRAY = (128, 128, 128)
-LIGHT_GRAY = (200, 200, 200)
+LIGHT_GRAY = (211, 211, 211)
+DARK_GRAY = (40, 40, 40)
 
-# Theme colors
 AMARANTH_PURPLE = (170, 17, 85)
 ATOMIC_TANGERINE = (247, 157, 101)
 FRENCH_BLUE = (0, 114, 187)
 CREAM = (239, 242, 192)
 ZOMP = (81, 158, 138)
 
-# Initialize Pygame
+DELAY_TIME = 1000
+
+# DO NOT TOUCH! 
 pygame.init()
 
-# Screen settings
 WIDTH = 1200
-HEIGHT = 800
+HEIGHT = 720
 FPS = 60
-GRID_SIZE = 60
-GRID_ORIGIN = (400, 100)
+
+GRID_SIZE = 80
+GRID_ORIGIN = (300, 90)
+ASSETS_PATH = "./assets"
+
+# Font chữ
+font = pygame.font.SysFont("Roboto", 128, bold=True)
+button_font = pygame.font.SysFont("Cascadia Mono", 32)
+title_font = pygame.font.SysFont("Consolas", 60, bold=True)
+body_font = pygame.font.SysFont("Consolas", 28)
+intro_font = pygame.font.SysFont("Consolas", 20)
+FONT_MEDIUM = pygame.font.Font(None, 32)
+FONT_SMALL = pygame.font.Font(None, 24)
+
+# Âm thanh
+hover_sound = pygame.mixer.Sound('./assets/click.mp3')
+click_sound = pygame.mixer.Sound('./assets/mouse-click.mp3')
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Wumpus World AI Game")
+pygame.display.set_caption("Wumpus World Agent")
+icon_image = pygame.image.load('./assets/bot.png').convert_alpha()
+pygame.display.set_icon(icon_image)
 clock = pygame.time.Clock()
 
-# Fonts
-font_large = pygame.font.Font(None, 48)
-font_medium = pygame.font.Font(None, 32)
-font_small = pygame.font.Font(None, 24)
+# Hình ảnh
+ICON_SIZE = (GRID_SIZE // 2, GRID_SIZE // 2) 
+agent_up_surf = pygame.image.load("./assets/agent_up.png")
+agent_right_surf = pygame.image.load("./assets/agent_right.png")
+agent_down_surf = pygame.image.load("./assets/agent_down.png")
+agent_left_surf = pygame.image.load("./assets/agent_left.png")
+breeze_surf = pygame.image.load("./assets/breeze.png")
+gold_surf = pygame.image.load("./assets/gold.png")
+pit_surf = pygame.image.load("./assets/pit.png")
+stench_surf = pygame.image.load("./assets/stench.png")
+wumpus_surf = pygame.image.load("./assets/wumpus.png")
+
+# scale thành icon
+agent_up_surf_icon = pygame.transform.scale(agent_up_surf, ICON_SIZE)
+agent_right_surf_icon = pygame.transform.scale(agent_right_surf, ICON_SIZE)
+agent_down_surf_icon = pygame.transform.scale(agent_down_surf, ICON_SIZE)
+agent_left_surf_icon = pygame.transform.scale(agent_left_surf, ICON_SIZE)
+breeze_surf_icon = pygame.transform.scale(breeze_surf, ICON_SIZE)
+gold_surf_icon = pygame.transform.scale(gold_surf, ICON_SIZE)
+pit_surf_icon = pygame.transform.scale(pit_surf, ICON_SIZE)
+stench_surf_icon = pygame.transform.scale(stench_surf, ICON_SIZE)
+wumpus_surf_icon = pygame.transform.scale(wumpus_surf, ICON_SIZE)
 
 class Button:
-    def __init__(self, text, x, y, width, height, color, action=None, text_color=BLACK):
-        self.text = text
+    # initialize button class with callback function
+    def __init__(self, present : Union[str, pygame.Surface], x: float, y: float, width: float, height: float, color: tuple[int, int, int], callback: callable, expandable = True) -> None:
         self.rect = pygame.Rect(x, y, width, height)
+        self.present = present
         self.color = color
-        self.action = action
-        self.text_color = text_color
-        self.hovered = False
-        
-    def draw(self, surface):
-        color = self.color if not self.hovered else tuple(min(255, c + 30) for c in self.color)
-        pygame.draw.rect(surface, color, self.rect)
-        pygame.draw.rect(surface, BLACK, self.rect, 2)
-        
-        text_surf = font_medium.render(str(self.text), True, self.text_color)
-        text_rect = text_surf.get_rect(center=self.rect.center)
-        surface.blit(text_surf, text_rect)
-    
-    def handle_event(self, event):
+        # callback function to call the function of the button
+        self.callback = callback
+        self.expandable = expandable
+        self.last_hovered = False
+        self.is_hovered = False
+
+    def draw_button(self, surface: pygame.surface) -> None:
+        present_surf = self.present
+        if isinstance(self.present, str):
+            present_surf = button_font.render(self.present, True, WHITE)
+        if self.is_hovered and self.expandable:
+            present_surf = pygame.transform.scale_by(present_surf, 1.1)
+            if isinstance(self.present, str):
+                pygame.draw.rect(surface, self.color, self.rect.scale_by(1.1, 1.1), border_radius=15)
+                if self.last_hovered == False:
+                    hover_sound.play()
+        else:
+            if isinstance(self.present, str):
+                pygame.draw.rect(surface, self.color, self.rect, border_radius=15)
+
+        self.last_hovered = self.is_hovered
+        present_rect = present_surf.get_rect(center=self.rect.center)
+        surface.blit(present_surf, present_rect)
+
+    def handle_event(self, event: pygame.event) -> None:
         if event.type == pygame.MOUSEMOTION:
-            self.hovered = self.rect.collidepoint(event.pos)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos) and self.action:
-                self.action()
+            self.is_hovered = self.rect.collidepoint(event.pos)
+        elif self.is_hovered and (event.type == pygame.MOUSEBUTTONDOWN or
+                                  event.type == pygame.KEYDOWN and event.key in [pygame.K_RETURN, pygame.K_SPACE]):
+            if self.expandable:
+                click_sound.play()
+            self.callback()
+    
+    def set_text(self, text: str) -> None:
+        if isinstance(self.present, str):
+            self.present = text
 
 class InputBox:
-    def __init__(self, x, y, width, height, default_text=""):
-        self.rect = pygame.Rect(x, y, width, height)
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
         self.color = WHITE
-        self.text = default_text
+        self.text = text
         self.active = False
-        
+        self.just_got_clicked = False
+
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = self.rect.collidepoint(event.pos)
-        elif event.type == pygame.KEYDOWN:
             if self.active:
-                if event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
-                else:
-                    self.text += event.unicode
-    
-    def draw(self, surface):
-        color = LIGHT_GRAY if self.active else WHITE
-        pygame.draw.rect(surface, color, self.rect)
-        pygame.draw.rect(surface, BLACK, self.rect, 2)
-        
-        text_surf = font_small.render(self.text, True, BLACK)
-        surface.blit(text_surf, (self.rect.x + 5, self.rect.y + 5))
+                self.just_got_clicked = True
+        if event.type == pygame.KEYDOWN and self.active:
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
+            else:
+                if self.just_got_clicked:
+                    self.text = ""
+                    self.just_got_clicked = False
+                self.text += event.unicode
 
-class WumpusWorldGUI:
-    def __init__(self):
-        self.world = None
-        self.agent = None
-        self.game_running = False
-        self.paused = True
-        self.step_delay = 1000
-        self.last_step_time = 0
-        
-        # Game settings
-        self.world_size = 8
-        self.num_wumpus = 2
-        self.pit_prob = 0.2
-        self.random_agent = False
-        self.moving_wumpus = False
-        
-    def draw_cell(self, x, y, cell):
-        cell_x = GRID_ORIGIN[0] + x * GRID_SIZE
-        cell_y = GRID_ORIGIN[1] + y * GRID_SIZE
-        cell_rect = pygame.Rect(cell_x, cell_y, GRID_SIZE, GRID_SIZE)
-        
-        # Base color
-        color = WHITE
-        if cell.isSafe:
-            color = GREEN
-        elif cell.isDangerous:
-            color = RED
-        elif cell.isVisited:
-            color = LIGHT_GRAY
-            
-        pygame.draw.rect(screen, color, cell_rect)
+    def draw_box(self, surface):
+        color = LIGHT_GRAY if self.active else self.color
+        pygame.draw.rect(surface, color, self.rect, border_radius=5)
+        pygame.draw.rect(surface, BLACK, self.rect, 2, border_radius=5)
+        text_surface = FONT_MEDIUM.render(self.text, True, BLACK)
+        surface.blit(text_surface, (self.rect.x + 8, self.rect.y + 8))
+
+
+def draw_cell(cell, is_visible, agent):
+    x, y = cell.location
+    cell_rect = pygame.Rect(GRID_ORIGIN[0] + x * GRID_SIZE, GRID_ORIGIN[1] + y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
+
+    # hide unknown cells
+    if not is_visible:
+        pygame.draw.rect(screen, DARK_GRAY, cell_rect)
         pygame.draw.rect(screen, BLACK, cell_rect, 1)
+        return
+
+    bg_color = WHITE
+    if cell.isDangerous(): 
+        bg_color = RED
+    elif cell.isSafe(): 
+        bg_color = GREEN
+    if cell.isVisited(): 
+        bg_color = LIGHT_GRAY
+    pygame.draw.rect(screen, bg_color, cell_rect)
+
+    if cell.isVisited():
+        if cell.getBreeze():
+            screen.blit(breeze_surf_icon, cell_rect.topleft)
+        if cell.getStench():
+            stench_rect = stench_surf_icon.get_rect(topright=cell_rect.topright)
+            screen.blit(stench_surf_icon, stench_rect)
+
+    occupant_surf_icon = None
+    if cell.getPit():
+        occupant_surf_icon = pit_surf_icon
+    elif cell.getWumpus():
+        occupant_surf_icon = wumpus_surf_icon
+    elif cell.getGold():
+        occupant_surf_icon = gold_surf_icon
         
-        # Draw symbols
-        center_x = cell_x + GRID_SIZE // 2
-        center_y = cell_y + GRID_SIZE // 2
+    if occupant_surf_icon:
+        occupant_rect = occupant_surf_icon.get_rect(center=cell_rect.center)
+        screen.blit(occupant_surf_icon, occupant_rect)
         
-        if cell.getPit:
-            pygame.draw.circle(screen, BROWN, (center_x, center_y), 15)
-        if cell.getWumpus:
-            pygame.draw.polygon(screen, PURPLE, [(center_x-10, center_y+10), 
-                                                (center_x, center_y-15), 
-                                                (center_x+10, center_y+10)])
-        if cell.getGold:
-            pygame.draw.circle(screen, YELLOW, (center_x, center_y), 10)
-        if cell.getBreeze:
-            text = font_small.render("~", True, BLUE)
-            screen.blit(text, (cell_x + 5, cell_y + 5))
-        if cell.getStench:
-            text = font_small.render("S", True, PURPLE)
-            screen.blit(text, (cell_x + GRID_SIZE - 15, cell_y + 5))
+    if agent.location == (x, y):
+        agent_surf_icon = None
+        if agent.direction == "UP": 
+            agent_surf_icon = agent_up_surf_icon
+        elif agent.direction == "RIGHT": 
+            agent_surf_icon = agent_right_surf_icon
+        elif agent.direction == "DOWN": 
+            agent_surf_icon = agent_down_surf_icon
+        elif agent.direction == "LEFT": 
+            agent_surf_icon = agent_left_surf_icon
+        
+        if agent_surf_icon:
+            agent_rect = agent_surf_icon.get_rect(center=cell_rect.center)
+            screen.blit(agent_surf_icon, agent_rect)
             
-        # Draw agent
-        if self.agent and self.agent.location == (x, y):
-            pygame.draw.circle(screen, BLACK, (center_x, center_y), 8)
+    # 6. Draw Grid Border over everything
+    pygame.draw.rect(screen, BLACK, cell_rect, 1)
+
+def menu_loop() -> None:
+    running = True
+    screen.fill(CREAM)
+    image = pygame.image.load('./assets/background.png').convert_alpha()
+    image_rect = image.get_rect()
+
+    button_width = 200
+    button_height = 60
+    button_x_coordinate = WIDTH // 2 - button_width // 2
+    last_button_y_coordinate = HEIGHT - 20 - button_height
+
+    buttons = [Button("Start Game", button_x_coordinate, last_button_y_coordinate - 2 * (button_height + 10), 
+                      button_width, button_height, ATOMIC_TANGERINE, start_game),
+               Button("Introduction", button_x_coordinate, last_button_y_coordinate - (button_height + 10), 
+                      button_width, button_height, ZOMP, introduction_screen),
+               Button("Quit Game", button_x_coordinate, last_button_y_coordinate, 
+                      button_width, button_height, AMARANTH_PURPLE, pygame.quit)]
     
-    def draw_world(self):
-        if not self.world:
-            return
+    hovered_button = 0
+    title = font.render("Wumpus World Agent", True, AMARANTH_PURPLE)
+
+    while running:
+        screen.blit(image, image_rect)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 250))
+        
+        for button in buttons:
+            button.draw_button(screen)
+
+        # event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                running = False
             
-        for y in range(self.world.size):
-            for x in range(self.world.size):
-                cell = self.world.listCells[y][x]
-                self.draw_cell(x, y, cell)
-    
-    def setup_game_screen(self):
-        running = True
-        
-        # Input boxes
-        size_input = InputBox(150, 100, 100, 30, str(self.world_size))
-        wumpus_input = InputBox(150, 150, 100, 30, str(self.num_wumpus))
-        pit_input = InputBox(150, 200, 100, 30, str(self.pit_prob))
-        
-        # Buttons
-        random_button = Button("Random Agent: No", 50, 250, 200, 40, ATOMIC_TANGERINE)
-        moving_button = Button("Moving Wumpus: No", 50, 300, 200, 40, ZOMP)
-        start_button = Button("Start Game", 50, 400, 150, 50, GREEN, self.start_game)
-        back_button = Button("Back", 50, 500, 100, 40, RED, self.show_menu)
-        
-        inputs = [size_input, wumpus_input, pit_input]
-        buttons = [random_button, moving_button, start_button, back_button]
-        
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                    buttons[hovered_button].is_hovered = False
+                    hovered_button = (hovered_button - 1) % len(buttons)
+                    buttons[hovered_button].is_hovered = True
                 
-                for inp in inputs:
-                    inp.handle_event(event)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                    buttons[hovered_button].is_hovered = False
+                    hovered_button = (hovered_button + 1) % len(buttons)
+                    buttons[hovered_button].is_hovered = True
                 
-                for button in buttons:
-                    button.handle_event(event)
-                
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if random_button.rect.collidepoint(event.pos):
-                        self.random_agent = not self.random_agent
-                        random_button.text = f"Random Agent: {'Yes' if self.random_agent else 'No'}"
-                    elif moving_button.rect.collidepoint(event.pos):
-                        self.moving_wumpus = not self.moving_wumpus
-                        moving_button.text = f"Moving Wumpus: {'Yes' if self.moving_wumpus else 'No'}"
-            
-            # Update values from inputs
-            try:
-                self.world_size = int(size_input.text) if size_input.text else 8
-                self.num_wumpus = int(wumpus_input.text) if wumpus_input.text else 2
-                self.pit_prob = float(pit_input.text) if pit_input.text else 0.2
-            except ValueError:
-                pass
-            
-            screen.fill(CREAM)
-            
-            # Labels
-            screen.blit(font_medium.render("Game Setup", True, BLACK), (50, 50))
-            screen.blit(font_small.render("World Size:", True, BLACK), (50, 105))
-            screen.blit(font_small.render("Number of Wumpus:", True, BLACK), (50, 155))
-            screen.blit(font_small.render("Pit Probability:", True, BLACK), (50, 205))
-            
-            for inp in inputs:
-                inp.draw(screen)
+                elif event.key == pygame.K_ESCAPE:
+                    running = False
+
+            for button in buttons:
+                button.handle_event(event=event)
+        
+        
+        pygame.display.flip()
+        clock.tick(FPS)
+
+def introduction_screen() -> None:
+    introductions = [
+        "Welcome to our Wumpus World Agent visualizer!",
+        "In this application, we will see how our agent",
+        "manage to grab the precious gold and get back",
+        "in a completely safe-and-sound state!",
+        "To see how our agent will explore this dangerous place",
+        "just click the button below and the truth shall be revealed!"]
+    # list to hold all buttons
+    buttons = []
+
+    title = title_font.render("Introduction", True, BLACK)
+
+    back_button_title = button_font.render("Back to Menu", True, BLACK)
+    back_button_width = back_button_title.get_width() + 35
+    back_button_height = back_button_title.get_height() + 35
+    back_button = Button("Back to Menu", WIDTH - 20 - back_button_width, 20, 
+                            back_button_width, back_button_height, ATOMIC_TANGERINE, menu_loop)
+    buttons.append(back_button)
+
+    start_button_title = button_font.render("Start Game", True, BLACK)
+    start_button_width = start_button_title.get_width() + 35
+    start_button_height = start_button_title.get_height() + 35
+    start_button = Button("Start Game", WIDTH // 2 - start_button_width // 2,HEIGHT - 20 - start_button_height, 
+                            start_button_width, start_button_height, AMARANTH_PURPLE, start_game)
+    buttons.append(start_button)
+
+    running = True
+    while running:
+        screen.fill(CREAM)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 50))
+
+        # rendering intro text
+        for i, line in enumerate(introductions):
+            text = intro_font.render(line, True, BLACK)
+            screen.blit(text, (20, 150 + 40 * i))
+        
+        for button in buttons:
+            button.draw_button(screen)
+
+        # event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                running = False
             
             for button in buttons:
-                button.draw(screen)
-            
-            pygame.display.flip()
-            clock.tick(FPS)
-            
-            if self.game_running:
-                running = False
+                button.handle_event(event=event)
     
-    def start_game(self):
-        self.agent = Agent(random=self.random_agent)
-        self.world = WumpusWorld(size=self.world_size, num_wumpus=self.num_wumpus, 
-                                pit_prob=self.pit_prob, agent=self.agent, 
-                                moving_wumpus=self.moving_wumpus)
-        self.game_running = True
-        self.game_loop()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+def start_game() -> None:
+    app_state = 'setup'  # 'setup' or 'game'
+    agent = None
+    world = None
     
-    def game_loop(self):
-        running = True
+    settings = {
+        'world_size': 8, 
+        'num_wumpus': 1, 
+        'pit_prob': 0.2,
+        'random_agent': False, 
+        'moving_wumpus': False
+    }
+
+    pause = True
+    game_over = False
+    fog_of_war = True
+    last_step_time = 0
+    
+    game_buttons = {}
+    setup_buttons = {}
+    input_boxes = {}
+
+    def start_the_game():
+        nonlocal agent, world, app_state, pause, game_over, last_step_time
+        # Validate and apply settings from input boxes
+        try:
+            settings['world_size'] = int(input_boxes['size'].text)
+            settings['num_wumpus'] = int(input_boxes['wumpus'].text)
+            settings['pit_prob'] = float(input_boxes['pit_prob'].text)
+        except (ValueError, TypeError):
+            print("Invalid input! Using default values.")
+            # Revert to defaults if input is bad
+            settings['world_size'], settings['num_wumpus'], settings['pit_prob'] = 8, 1, 0.2
         
-        # Control buttons
-        play_button = Button("Play", 50, 50, 80, 40, GREEN, self.toggle_pause)
-        reset_button = Button("Reset", 50, 100, 80, 40, ATOMIC_TANGERINE, self.reset_game)
-        menu_button = Button("Menu", 50, 150, 80, 40, RED, self.show_menu)
+        agent = Agent(random=settings['random_agent'])
+        world = WumpusWorld(
+            agent=agent, size=settings['world_size'], 
+            num_wumpus=settings['num_wumpus'], pit_prob=settings['pit_prob'],
+            moving_wumpus=settings['moving_wumpus']
+        )
         
-        buttons = [play_button, reset_button, menu_button]
+        pause = True
+        game_over = False
+        last_step_time = 0
+        game_buttons['pause_play'].set_text('Play (P)')
+        game_buttons['score_panel'].set_text(f'Score: {agent.score}')
+        game_buttons['action_panel'].set_text('Action: None')
+        game_buttons['percepts_panel'].set_text('Percepts: {}')
         
-        while running and self.game_running:
-            current_time = pygame.time.get_ticks()
+        app_state = 'game'
+
+    def change_play_pause():
+        nonlocal pause
+        if not game_over:
+            pause = not pause
+            game_buttons['pause_play'].set_text('Play (P)' if pause else 'Pause (P)')
+
+    def reset_to_setup():
+        nonlocal app_state
+        app_state = 'setup'
+
+    def toggle_setting(key, button, text_template):
+        settings[key] = not settings[key]
+        button.set_text(text_template.format('Yes' if settings[key] else 'No'))
+    
+    input_boxes['size'] = InputBox(WIDTH//2, 180, 150, 40, str(settings['world_size']))
+    input_boxes['wumpus'] = InputBox(WIDTH//2, 240, 150, 40, str(settings['num_wumpus']))
+    input_boxes['pit_prob'] = InputBox(WIDTH//2, 300, 150, 40, str(settings['pit_prob']))
+    
+    random_agent_button = Button(f"Random Agent: {'Yes' if settings['random_agent'] else 'No'}",
+                                 WIDTH//2 - 150, 380, 300, 50, GRAY, None)
+    random_agent_button.callback = lambda: toggle_setting('random_agent', random_agent_button, "Random Agent: {}")
+    setup_buttons['random_agent'] = random_agent_button
+
+    moving_wumpus_button = Button(f"Moving Wumpus: {'Yes' if settings['moving_wumpus'] else 'No'}",
+                                  WIDTH//2 - 150, 440, 300, 50, GRAY, None)
+    moving_wumpus_button.callback = lambda: toggle_setting('moving_wumpus', moving_wumpus_button, "Moving Wumpus: {}")
+    setup_buttons['moving_wumpus'] = moving_wumpus_button
+
+    setup_buttons['start'] = Button('Start Game', WIDTH//2 - 100, 520, 200, 60, GREEN, start_the_game)
+
+    game_buttons['pause_play'] = Button('Play (P)', 20, 20, 180, 50, GREEN, change_play_pause)
+    game_buttons['reset'] = Button('New Game', 20, 80, 180, 50, BLUE, reset_to_setup)
+    game_buttons['fog'] = Button('Fog: ON', 20, 140, 180, 50, PURPLE, lambda: toggle_fog())
+    game_buttons['score_panel'] = Button('Score: 0', 20, 240, 220, 50, GRAY, None, expandable=False)
+    game_buttons['action_panel'] = Button('Action: None', 20, 300, 220, 50, GRAY, None, expandable=False)
+    game_buttons['percepts_panel'] = Button('Percepts: {}', 20, 360, 220, 50, GRAY, None, expandable=False)
+    
+    def toggle_fog():
+        nonlocal fog_of_war
+        fog_of_war = not fog_of_war
+        game_buttons['fog'].set_text('Fog: ON' if fog_of_war else 'Fog: OFF')
+
+    # main loop
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: running = False
             
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                
-                for button in buttons:
-                    button.handle_event(event)
-                
+            if app_state == 'setup':
+                for btn in setup_buttons.values(): btn.handle_event(event)
+                for box in input_boxes.values(): box.handle_event(event)
+            elif app_state == 'game':
+                for btn in game_buttons.values(): btn.handle_event(event)
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.toggle_pause()
-                    elif event.key == pygame.K_r:
-                        self.reset_game()
+                    if event.key == pygame.K_p: change_play_pause()
+                    if event.key == pygame.K_r: reset_to_setup()
+        
+        screen.fill(CREAM)
+
+        if app_state == 'setup':
+            title = title_font.render("Wumpus World Setup", True, BLACK)
+            screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 80))
             
-            # Update pause button text
-            play_button.text = "Pause" if not self.paused else "Play"
-            
-            # Game step
-            if not self.paused and current_time - self.last_step_time > self.step_delay:
-                if self.agent.alive and not self.agent.out:
-                    self.game_step()
-                    self.last_step_time = current_time
-                else:
-                    self.paused = True
-            
-            # Draw everything
-            screen.fill(CREAM)
-            
-            for button in buttons:
-                button.draw(screen)
-            
-            self.draw_world()
-            self.draw_info()
-            
-            pygame.display.flip()
-            clock.tick(FPS)
-    
-    def game_step(self):
-        # Get percepts and update KB
-        self.agent.percepts = self.world.tell_agent_percept()
-        self.world.reset_scream_bump()
-        
-        self.agent.tell()
-        self.agent.infer_surrounding_cells()
-        self.world.update_agent_known_cells()
-        
-        # Agent selects action
-        action = self.agent.select_action()
-        
-        # Update world state
-        self.world.update_world(action=action)
-        self.agent.update_visited_location()
-    
-    def draw_info(self):
-        info_x = 50
-        info_y = 250
-        line_height = 25
-        
-        info_texts = [
-            f"Location: {self.agent.location}",
-            f"Direction: {self.agent.direction}",
-            f"Score: {self.agent.score}",
-            f"Has Gold: {self.agent.has_gold}",
-            f"Has Arrow: {self.agent.has_arrow}",
-            f"Alive: {self.agent.alive}",
-            f"Percepts: {self.agent.percepts}"
-        ]
-        
-        for i, text in enumerate(info_texts):
-            surf = font_small.render(text, True, BLACK)
-            screen.blit(surf, (info_x, info_y + i * line_height))
-    
-    def toggle_pause(self):
-        self.paused = not self.paused
-    
-    def reset_game(self):
-        self.game_running = False
-        self.setup_game_screen()
-    
-    def show_menu(self):
-        self.game_running = False
-        self.menu_loop()
-    
-    def menu_loop(self):
-        running = True
-        
-        title = font_large.render("Wumpus World AI", True, AMARANTH_PURPLE)
-        
-        buttons = [
-            Button("Start Game", WIDTH//2 - 100, HEIGHT//2 - 60, 200, 50, ATOMIC_TANGERINE, self.setup_game_screen),
-            Button("Quit", WIDTH//2 - 100, HEIGHT//2 + 20, 200, 50, AMARANTH_PURPLE, lambda: pygame.quit() or sys.exit())
-        ]
-        
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            labels = {"World Size:": 185, "Num Wumpus:": 245, "Pit Probability:": 305}
+            for text, y_pos in labels.items():
+                label_surf = FONT_MEDIUM.render(text, True, BLACK)
+                screen.blit(label_surf, (WIDTH//2 - 250, y_pos))
+
+            for btn in setup_buttons.values(): btn.draw_button(screen)
+            for box in input_boxes.values(): box.draw_box(screen)
+
+        elif app_state == 'game':
+            if not pause and not game_over and pygame.time.get_ticks() - last_step_time >= DELAY_TIME:
+
+                agent.get_percepts_from(world)
+                world.reset_scream_bump()
+                agent.tell()
+                world.update_agent_known_cells()
+                agent.infer_surrounding_cells()
+                action_code = agent.select_action()
+                world.update_world(action=action_code)
+                agent.update_visited_location()
                 
-                for button in buttons:
-                    button.handle_event(event)
-            
-            screen.fill(CREAM)
-            screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//4))
-            
-            for button in buttons:
-                button.draw(screen)
-            
-            pygame.display.flip()
-            clock.tick(FPS)
-            
-            if self.game_running:
-                running = False
+                game_buttons['score_panel'].set_text(f'Score: {agent.score}')
+                game_buttons['action_panel'].set_text(f'Action: {agent.name_actions.get(action_code, "Unknown")}')
+                game_buttons['percepts_panel'].set_text(f'Percepts: {agent.percepts}')
+                
+                if not agent.alive or agent.out:
+                    game_over = True; pause = True
+                    game_buttons['pause_play'].set_text('Game Over')
+                
+                last_step_time = pygame.time.get_ticks()
+
+            known_locs = {cell.location for cell in agent.known_cells} if agent else set()
+            if world:
+                for x in range(world.size):
+                    for y in range(world.size):
+                        draw_cell(world.listCells[x][y], (x,y) in known_locs or not fog_of_war, agent)
+
+            for button in game_buttons.values(): 
+                button.draw_button(screen)
+        
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    pygame.quit()
+    sys.exit()
+
+def quit_game():
+    pygame.quit()
+    sys.exit()
 
 def main():
-    gui = WumpusWorldGUI()
-    gui.menu_loop()
+    menu_loop()
 
 if __name__ == "__main__":
     main()
+
+
