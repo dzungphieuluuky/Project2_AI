@@ -93,13 +93,37 @@ def menu_loop() -> None:
         clock.tick(FPS)
 
 def introduction_screen() -> None:
-    introductions = [
-        "Welcome to our Wumpus World Agent visualizer!",
-        "In this application, we will see how our agent",
-        "manage to grab the precious gold and get back",
-        "in a completely safe-and-sound state!",
-        "To see how our agent will explore this dangerous place",
-        "just click the button below and the truth shall be revealed!"]
+    welcome_text = [
+        "Welcome to the Wumpus World AI Visualizer!",
+        "An intelligent agent is trapped in a perilous cave, filled with deadly pits",
+        "and a fearsome monster called Wumpus. Using only its senses (smell,",
+        "breeze, glitter), the agent must deduce the location of the gold, grab it,",
+        "and return to the starting point to climb out of the cave.",
+        "Use the setup screen to configure the challenge, then watch as the agent",
+        "uses propositional logic to navigate the dangers and achieve its goal!"
+    ]
+
+    notation_icon_size = (40, 40)
+    notations = []
+    
+    # Define which assets to show and their descriptions
+    symbols_to_explain = {
+        'agent_up': "The Agent",
+        'wumpus': "The deadly Wumpus",
+        'pit': "A bottomless Pit",
+        'gold': "The precious Gold",
+        'stench': "Stench (Wumpus is nearby)",
+        'breeze': "Breeze (A Pit is nearby)",
+        'glitter': "Glitter (Gold is in this cell)",
+        'scream': "Scream (A Wumpus was hit)",
+    }
+
+    for key, description in symbols_to_explain.items():
+        if key in original_assets:
+            icon = pygame.transform.scale(original_assets[key], notation_icon_size)
+            notations.append((icon, description))
+
+
     # list to hold all buttons
     buttons = []
 
@@ -109,7 +133,7 @@ def introduction_screen() -> None:
     back_button_width = back_button_title.get_width() + 35
     back_button_height = back_button_title.get_height() + 35
     back_button = Button("Back to Menu", WIDTH - 20 - back_button_width, 20, 
-                            back_button_width, back_button_height, ATOMIC_TANGERINE, menu_loop)
+                                back_button_width, back_button_height, ATOMIC_TANGERINE, menu_loop)
     buttons.append(back_button)
 
     start_button_title = button_font.render("Start Game", True, BLACK)
@@ -124,13 +148,27 @@ def introduction_screen() -> None:
         screen.fill(CREAM)
         screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 50))
 
-        # rendering intro text
-        for i, line in enumerate(introductions):
-            text = intro_font.render(line, True, BLACK)
-            screen.blit(text, (20, 150 + 40 * i))
+        for i, line in enumerate(welcome_text):
+            text_surf = intro_font.render(line, True, BLACK)
+            screen.blit(text_surf, (50, 120 + 35 * i))
+
+        # Render "Game Notations" title
+        notation_title_surf = FONT_MEDIUM.render("Game Symbols", True, BLACK)
+        screen.blit(notation_title_surf, (40, 360))
         
-        for button in buttons:
-            button.draw_button(screen)
+        # Render the list of icons and their descriptions on the right
+        notation_start_y = 420
+        for i, (icon_surf, description) in enumerate(notations):
+            y_pos = notation_start_y + (i % 4) * (notation_icon_size[1] + 15)
+            
+            # Draw the icon
+            icon_rect = icon_surf.get_rect(centery=y_pos, left=40 + 400 * (i > 3))
+            screen.blit(icon_surf, icon_rect)
+            
+            # Draw the description text next to it
+            desc_surf = FONT_MEDIUM.render(f"- {description}", True, BLACK)
+            desc_rect = desc_surf.get_rect(centery=y_pos, left=icon_rect.right + 20)
+            screen.blit(desc_surf, desc_rect)
 
         # event handling
         for event in pygame.event.get():
@@ -143,7 +181,10 @@ def introduction_screen() -> None:
             
             for button in buttons:
                 button.handle_event(event=event)
-    
+
+        for button in buttons:
+            button.draw_button(screen)
+
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -349,11 +390,20 @@ def start_game() -> None:
                                   WIDTH//2 - 150, 440, 300, 50, AMARANTH_PURPLE, None)
     moving_wumpus_button.callback = lambda: toggle_setting('moving_wumpus', moving_wumpus_button, "Moving Wumpus: {}")
     setup_buttons['moving_wumpus'] = moving_wumpus_button
+    
+    back_button_title = button_font.render("Back to Menu", True, BLACK)
+    back_button_width = back_button_title.get_width() + 35
+    back_button_height = back_button_title.get_height() + 35
 
     setup_buttons['start'] = Button('Start Game', WIDTH//2 - 100, 520, 200, 60, GREEN, start_main_loop)
-
+    setup_buttons['back_to_menu'] = Button("Back to Menu", WIDTH - 20 - back_button_width, 20, 
+                                back_button_width, back_button_height, ATOMIC_TANGERINE, menu_loop)
     game_buttons['pause_play'] = Button('Play (P)', 20, 20, 180, 50, GREEN, change_play_pause)
     game_buttons['reset'] = Button('New Game', 20, 80, 180, 50, BLUE, reset_to_setup)
+
+    game_buttons['back_to_menu'] = Button("Back to Menu", 20, 140, 
+                                          back_button_width, back_button_height, ATOMIC_TANGERINE, menu_loop)
+
     
     game_buttons['score_panel'] = Button('Score: 0', 20, 240, 264, 60, ZOMP, None, expandable=False)
     game_buttons['action_panel'] = Button('Action: None', 20, 320, 264, 60, FRENCH_BLUE, None, expandable=False)
@@ -391,8 +441,10 @@ def start_game() -> None:
                 label_surf = FONT_MEDIUM.render(text, True, BLACK)
                 screen.blit(label_surf, (WIDTH//2 - 250, y_pos))
 
-            for btn in setup_buttons.values(): btn.draw_button(screen)
-            for box in input_boxes.values(): box.draw_box(screen)
+            for btn in setup_buttons.values(): 
+                btn.draw_button(screen)
+            for box in input_boxes.values(): 
+                box.draw_box(screen)
 
         elif app_state == 'game':
             if not pause and not game_over and pygame.time.get_ticks() - last_step_time >= DELAY_TIME:
