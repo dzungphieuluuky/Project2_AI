@@ -294,3 +294,6 @@ class Agent:
         if move:
             self.selected_action = f"Retreat to (0,0): {self.name_actions[move]}"
             return move
+
+        # fallback solution
+        return 'l'
