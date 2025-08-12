@@ -98,7 +98,7 @@ def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time,
         'hybrid_agent_result': logic_metrics,
         'random_agent_result': random_metrics
     }
-    with open(f"{round(time.time(), 3)}.json", mode="w") as file:
+    with open(f"./experiments/{int(time.time())}.json", mode="w") as file:
             json.dump(results, file, indent=4)
 
 def run_comparison_simulations(num_runs=100, world_size=8, num_wumpus=2, pit_prob=0.2, moving_wumpus=False):
