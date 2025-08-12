@@ -3,6 +3,7 @@ import copy
 import time
 from agent import Agent
 from world import WumpusWorld
+import json
 
 def run_single_headless_game(world, agent):
     """
@@ -42,14 +43,14 @@ def run_single_headless_game(world, agent):
         "actions": actions_taken
     }
 
-def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time):
+def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time, world_config):
     """Calculates and prints the final statistics"""
 
     def calculate_metrics(stats):
         if not stats:
             return {
                 "success_rate": 0, "avg_score": 0, "avg_actions": 0,
-                "avg_actions_on_success": 0
+                "avg_actions_on_success": 'ìninity'
             }
         
         success_count = sum(1 for r in stats if r['success'])
@@ -61,7 +62,7 @@ def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time)
             "success_rate": (success_count / num_runs) * 100,
             "avg_score": sum(r['score'] for r in stats) / num_runs,
             "avg_actions": sum(r['actions'] for r in stats) / num_runs,
-            "avg_actions_on_success": total_actions_on_success / success_count if success_count > 0 else 0
+            "avg_actions_on_success": total_actions_on_success / success_count if success_count > 0 else 'infinity'
         }
 
     logic_metrics = calculate_metrics(logic_stats)
@@ -81,12 +82,26 @@ def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time)
     print(f"{'Success Rate (%)':<28} | {logic_metrics['success_rate']:^15.2f} | {random_metrics['success_rate']:^15.2f}")
     print(f"{'Average Score':<28} | {logic_metrics['avg_score']:^15.2f} | {random_metrics['avg_score']:^15.2f}")
     print(f"{'Avg Actions (All Runs)':<28} | {logic_metrics['avg_actions']:^15.2f} | {random_metrics['avg_actions']:^15.2f}")
-    print(f"{'Avg Actions (Successful)':<28} | {logic_metrics['avg_actions_on_success']:^15.2f} | {random_metrics['avg_actions_on_success']:^15.2f}")
+
+    logic_eff = logic_metrics['avg_actions_on_success']
+    random_eff = random_metrics['avg_actions_on_success']
+
+    logic_eff_str = f"{logic_eff:.2f}" if isinstance(logic_eff, (int, float)) else logic_eff
+    random_eff_str = f"{random_eff:.2f}" if isinstance(random_eff, (int, float)) else random_eff
+    print(f"{'Avg Actions (Successful)':<28} | {logic_eff_str:^15} | {random_eff_str:^15}")    
     
     print("="*60)
     print("\n* Avg Actions (Successful) is a measure of decision efficiency.\n")
+    results = {
+        'num_runs': num_runs,
+        'world_configurations': world_config,
+        'hybrid_agent_result': logic_metrics,
+        'random_agent_result': random_metrics
+    }
+    with open(f"{round(time.time(), 3)}.json", mode="w") as file:
+            json.dump(results, file, indent=4)
 
-def run_comparison_simulations(num_runs=100, world_size=8, num_wumpus=2, pit_prob=0.2):
+def run_comparison_simulations(num_runs=100, world_size=8, num_wumpus=2, pit_prob=0.2, moving_wumpus=False):
     """
     Runs a series of simulations to compare the intelligent agent
     against the random agent on identical maps.
@@ -103,7 +118,8 @@ def run_comparison_simulations(num_runs=100, world_size=8, num_wumpus=2, pit_pro
             agent=logic_agent, 
             size=world_size, 
             num_wumpus=num_wumpus, 
-            pit_prob=pit_prob
+            pit_prob=pit_prob,
+            moving_wumpus=moving_wumpus
         )
         
         # Test the intelligent agent
@@ -124,8 +140,13 @@ def run_comparison_simulations(num_runs=100, world_size=8, num_wumpus=2, pit_pro
         sys.stdout.flush()
 
     end_time = time.time()
-    
-    analyze_and_print_results(logic_agent_stats, random_agent_stats, num_runs, end_time - start_time)
+    world_configurations = {
+        'world_size': world_size,
+        'number_wumpus': num_wumpus,
+        'pit_probability': pit_prob,
+        'moving_wumpus': moving_wumpus
+    }
+    analyze_and_print_results(logic_agent_stats, random_agent_stats, num_runs, end_time - start_time, world_configurations)
 
 
 if __name__ == "__main__":
@@ -141,9 +162,12 @@ if __name__ == "__main__":
     pit_prob = float(input("Pit probability: "))
     if pit_prob is None:
         pit_prob = 0.2
+    moving_wumpus = input("Moving wumpus (y/n): ").lower()
+    moving_wumpus = True if moving_wumpus == "y" else False
     run_comparison_simulations(
         num_runs=number_of_runs,
         world_size=world_size,
         num_wumpus=num_wumpus,
-        pit_prob=pit_prob
+        pit_prob=pit_prob,
+        moving_wumpus=moving_wumpus
     )
