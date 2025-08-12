@@ -1,0 +1,23 @@
+{
+    "num_runs": 200,
+    "world_configurations": {
+        "world_size": 16,
+        "number_wumpus": 2,
+        "pit_probability": 0.3,
+        "moving_wumpus": false
+    },
+    "hybrid_agent_result": {
+        "success_rate": 1.0,
+        "avg_score": -1.335,
+        "avg_actions": 12.265,
+        "avg_actions_on_success": 8.5,
+        "decision_efficiency": 11.764705882352942
+    },
+    "random_agent_result": {
+        "success_rate": 0.0,
+        "avg_score": -344.575,
+        "avg_actions": 9.405,
+        "avg_actions_on_success": "infinity",
+        "decision_efficiency": 0
+    }
+}

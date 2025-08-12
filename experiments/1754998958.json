@@ -8,14 +8,16 @@
     },
     "hybrid_agent_result": {
         "success_rate": 0.5,
-        "avg_score": -8.075,
-        "avg_actions": 14.085,
-        "avg_actions_on_success": 12.0
+        "avg_score": -8.41,
+        "avg_actions": 14.33,
+        "avg_actions_on_success": 21.0,
+        "decision_efficiency": 4.761904761904762
     },
     "random_agent_result": {
         "success_rate": 0.0,
-        "avg_score": -321.055,
-        "avg_actions": 10.97,
-        "avg_actions_on_success": "infinity"
+        "avg_score": -365.895,
+        "avg_actions": 11.96,
+        "avg_actions_on_success": "infinity",
+        "decision_efficiency": 0
     }
 }

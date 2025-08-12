@@ -57,12 +57,14 @@ def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time,
         
         successful_runs = [r for r in stats if r['success']]
         total_actions_on_success = sum(r['actions'] for r in successful_runs)
-        
+        average_action_success = total_actions_on_success / success_count if success_count > 0 else 'infinity'
+        decision_eff = 100 / average_action_success if isinstance(average_action_success, float) else 0
         return {
             "success_rate": (success_count / num_runs) * 100,
             "avg_score": sum(r['score'] for r in stats) / num_runs,
             "avg_actions": sum(r['actions'] for r in stats) / num_runs,
-            "avg_actions_on_success": total_actions_on_success / success_count if success_count > 0 else 'infinity'
+            "avg_actions_on_success": average_action_success,
+            "decision_efficiency": decision_eff
         }
 
     logic_metrics = calculate_metrics(logic_stats)
@@ -83,13 +85,19 @@ def analyze_and_print_results(logic_stats, random_stats, num_runs, elapsed_time,
     print(f"{'Average Score':<28} | {logic_metrics['avg_score']:^15.2f} | {random_metrics['avg_score']:^15.2f}")
     print(f"{'Avg Actions (All Runs)':<28} | {logic_metrics['avg_actions']:^15.2f} | {random_metrics['avg_actions']:^15.2f}")
 
-    logic_eff = logic_metrics['avg_actions_on_success']
-    random_eff = random_metrics['avg_actions_on_success']
+    logic_avg_act_success = logic_metrics['avg_actions_on_success']
+    random_avg_act_success = random_metrics['avg_actions_on_success']
 
-    logic_eff_str = f"{logic_eff:.2f}" if isinstance(logic_eff, (int, float)) else logic_eff
-    random_eff_str = f"{random_eff:.2f}" if isinstance(random_eff, (int, float)) else random_eff
-    print(f"{'Avg Actions (Successful)':<28} | {logic_eff_str:^15} | {random_eff_str:^15}")    
-    
+    logic_avg_act_success_str = f"{logic_avg_act_success:.2f}" if isinstance(logic_avg_act_success, (int, float)) else logic_avg_act_success
+    random_avg_act_success_str = f"{random_avg_act_success:.2f}" if isinstance(random_avg_act_success, (int, float)) else random_avg_act_success
+    print(f"{'Avg Actions (Successful)':<28} | {logic_avg_act_success_str:^15} | {random_avg_act_success_str:^15}")    
+
+    logic_dec_eff = logic_metrics['decision_efficiency']
+    random_dec_eff = random_metrics['decision_efficiency']
+    logic_dec_eff_str = f"{logic_dec_eff:.2f}" if isinstance(logic_dec_eff, (int, float)) else logic_dec_eff
+    random_dec_eff_str = f"{random_dec_eff:.2f}" if isinstance(random_dec_eff, (int, float)) else random_dec_eff
+    print(f"{'Decision Efficiency':<28} | {logic_dec_eff_str:^15} | {random_dec_eff_str:^15}")    
+
     print("="*60)
     print("\n* Avg Actions (Successful) is a measure of decision efficiency.\n")
     results = {
