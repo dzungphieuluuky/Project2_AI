@@ -3,8 +3,8 @@ from cell import Cell
 class KnowledgeBase:
     def __init__(self) -> None:
         self.clauses = [
-            {"~P00"},
-            {"~W00"}
+            {"~P0-0"},
+            {"~W0-0"}
         ]
 
     def add_clause(self, clause) -> None:
@@ -65,37 +65,37 @@ class KnowledgeBase:
         x, y = location
         # Breeze xử lý giống tell cũ
         if percepts.get("breeze", False):
-            clause = {f"P{nx}{ny}" for (nx, ny) in adjacents}
+            clause = {f"P{nx}-{ny}" for (nx, ny) in adjacents}
             self.add_clause(clause)
         else:
             for (nx, ny) in adjacents:
-                self.add_clause({f"~P{nx}{ny}"})
+                self.add_clause({f"~P{nx}-{ny}"})
 
         # Stench xử lý đặc biệt cho Wumpus di chuyển
         if percepts.get("stench", False):
             # Xóa tất cả các clause đơn ~W ở ô bên cạnh
             for (nx, ny) in adjacents:
-                neg_w = {f"~W{nx}{ny}"}
+                neg_w = {f"~W{nx}-{ny}"}
                 if neg_w in self.clauses:
                     self.clauses.remove(neg_w)
             # Thêm clause như bình thường
-            clause = {f"W{nx}{ny}" for (nx, ny) in adjacents}
+            clause = {f"W{nx}-{ny}" for (nx, ny) in adjacents}
             self.add_clause(clause)
         else:
             # Xóa tất cả các clause đơn W ở ô bên cạnh
             for (nx, ny) in adjacents:
-                w = {f"W{nx}{ny}"}
+                w = {f"W{nx}-{ny}"}
                 if w in self.clauses:
                     self.clauses.remove(w)
             # Thêm clause phủ định như bình thường
             for (nx, ny) in adjacents:
-                self.add_clause({f"~W{nx}{ny}"})
+                self.add_clause({f"~W{nx}-{ny}"})
     
     def infer_safe_and_dangerous_cells(self, knownCells: list[Cell]) -> None:
         for cell in knownCells:
             x, y = cell.location
-            pid = f"P{x}{y}"
-            wid = f"W{x}{y}"
+            pid = f"P{x}-{y}"
+            wid = f"W{x}-{y}"
 
             # Kiểm tra nếu tồn tại mệnh đề đơn khẳng định chắc chắn
             definitely_p = {pid} in self.clauses
@@ -129,7 +129,7 @@ class KnowledgeBase:
             while 0 <= x + dx < size and 0 <= y + dy < size:
                 x += dx
                 y += dy
-                wid = f"W{x}{y}"
+                wid = f"W{x}-{y}"
                 if {wid} in self.clauses:
                     first_wumpus_pos = (x, y)
                     break
@@ -144,19 +144,19 @@ class KnowledgeBase:
             while 0 <= x + dx < size and 0 <= y + dy < size:
                 x += dx
                 y += dy
-                self.add_clause({f"~W{x}{y}"})
+                self.add_clause({f"~W{x}-{y}"})
             return False
         
     def remove_wumpus(self, location: tuple[int, int], knownCells: list[Cell]) -> None:
         x, y = location
-        target_literals = {f"W{x}{y}", f"~W{x}{y}"}
+        target_literals = {f"W{x}-{y}", f"~W{x}-{y}"}
 
         self.clauses = [
             clause for clause in self.clauses
             if not any(lit in target_literals for lit in clause)
         ]
 
-        self.add_clause({f"~W{x}{y}"})
+        self.add_clause({f"~W{x}-{y}"})
         for cell in knownCells:
             if cell.location == (x, y):
                 cell.markSafe()

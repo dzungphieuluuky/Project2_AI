@@ -24,6 +24,7 @@ class Agent:
         self.selected_action = "None"
         self.is_random = random
 
+        self.total_percepts = {}
         self.adjacent_cells = []
         self.known_cells = []
         self.percepts = {}
@@ -101,13 +102,15 @@ class Agent:
         """Lấy percept tại vị trí agent hiện tại"""
         x, y = self.location
         tile = world.listCells[x][y]
-        return {
+        new_percept = {
             "breeze": tile.getBreeze(),
             "stench": tile.getStench(),
             "glitter": tile.getGold(),
             "bump": world.bump_flag,  # chưa xử lý tường
             "scream": world.scream_flag  # được xử lý khi bắn trúng Wumpus
         }
+        self.total_percepts[self.location] = new_percept
+        self.percepts = new_percept
     
     def tell(self) -> None:
         self.adjacent_cells = self.get_adjacent_cells()
@@ -122,8 +125,8 @@ class Agent:
         if not self.alive:
             return
         x, y = self.location
-        self.kb.add_clause({f"~P{x}{y}"})
-        self.kb.add_clause({f"~W{x}{y}"})
+        self.kb.add_clause({f"~P{x}-{y}"})
+        self.kb.add_clause({f"~W{x}-{y}"})
     
     def infer_surrounding_cells(self) -> None:
         self.kb.full_resolution_closure()
@@ -187,7 +190,7 @@ class Agent:
         suspects = {}
         for cell in self.known_cells:
             if cell.location not in self.visited_locations and not cell.isSafe():
-                wumpus_literal = f"W{cell.location[0]}{cell.location[1]}"
+                wumpus_literal = f"W{cell.location[0]}-{cell.location[1]}"
                 for clause in self.kb.clauses:
                     if wumpus_literal in clause and len(clause) > 1:
                         if cell.location not in suspects: suspects[cell.location] = 0

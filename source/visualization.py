@@ -1,53 +1,17 @@
 import pygame
 import sys
-from typing import Union
+
 from agent import Agent
 from world import WumpusWorld
-
-# Màu mè 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-BLUE = (100, 150, 255)
-RED = (255, 80, 80)
-GREEN = (80, 200, 80)
-YELLOW = (255, 220, 50)
-BROWN = (139, 69, 19)
-PURPLE = (150, 110, 200)
-GRAY = (128, 128, 128)
-LIGHT_GRAY = (211, 211, 211)
-DARK_GRAY = (40, 40, 40)
-
-AMARANTH_PURPLE = (170, 17, 85)
-ATOMIC_TANGERINE = (247, 157, 101)
-FRENCH_BLUE = (0, 114, 187)
-CREAM = (239, 242, 192)
-ZOMP = (81, 158, 138)
-
-DELAY_TIME = 1000
+from button import *
+from config import *
 
 # DO NOT TOUCH! 
 pygame.init()
 
-WIDTH = 1200
-HEIGHT = 720
-FPS = 60
-
 GRID_SIZE = 80
 GRID_ORIGIN = (300, 90)
 ASSETS_PATH = "./assets"
-
-# Font chữ
-font = pygame.font.SysFont("Roboto", 128, bold=True)
-button_font = pygame.font.SysFont("Cascadia Mono", 32)
-title_font = pygame.font.SysFont("Consolas", 60, bold=True)
-body_font = pygame.font.SysFont("Consolas", 28)
-intro_font = pygame.font.SysFont("Consolas", 20)
-FONT_MEDIUM = pygame.font.Font(None, 32)
-FONT_SMALL = pygame.font.Font(None, 24)
-
-# Âm thanh
-hover_sound = pygame.mixer.Sound('./assets/click.mp3')
-click_sound = pygame.mixer.Sound('./assets/mouse-click.mp3')
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wumpus World Agent")
@@ -56,156 +20,21 @@ pygame.display.set_icon(icon_image)
 clock = pygame.time.Clock()
 
 # Hình ảnh
-ICON_SIZE = (GRID_SIZE // 2, GRID_SIZE // 2) 
-agent_up_surf = pygame.image.load("./assets/agent_up.png")
-agent_right_surf = pygame.image.load("./assets/agent_right.png")
-agent_down_surf = pygame.image.load("./assets/agent_down.png")
-agent_left_surf = pygame.image.load("./assets/agent_left.png")
-breeze_surf = pygame.image.load("./assets/breeze.png")
-gold_surf = pygame.image.load("./assets/gold.png")
-pit_surf = pygame.image.load("./assets/pit.png")
-stench_surf = pygame.image.load("./assets/stench.png")
-wumpus_surf = pygame.image.load("./assets/wumpus.png")
-
-# scale thành icon
-agent_up_surf_icon = pygame.transform.scale(agent_up_surf, ICON_SIZE)
-agent_right_surf_icon = pygame.transform.scale(agent_right_surf, ICON_SIZE)
-agent_down_surf_icon = pygame.transform.scale(agent_down_surf, ICON_SIZE)
-agent_left_surf_icon = pygame.transform.scale(agent_left_surf, ICON_SIZE)
-breeze_surf_icon = pygame.transform.scale(breeze_surf, ICON_SIZE)
-gold_surf_icon = pygame.transform.scale(gold_surf, ICON_SIZE)
-pit_surf_icon = pygame.transform.scale(pit_surf, ICON_SIZE)
-stench_surf_icon = pygame.transform.scale(stench_surf, ICON_SIZE)
-wumpus_surf_icon = pygame.transform.scale(wumpus_surf, ICON_SIZE)
-
-class Button:
-    # initialize button class with callback function
-    def __init__(self, present : Union[str, pygame.Surface], x: float, y: float, width: float, height: float, color: tuple[int, int, int], callback: callable, expandable = True) -> None:
-        self.rect = pygame.Rect(x, y, width, height)
-        self.present = present
-        self.color = color
-        # callback function to call the function of the button
-        self.callback = callback
-        self.expandable = expandable
-        self.last_hovered = False
-        self.is_hovered = False
-
-    def draw_button(self, surface: pygame.surface) -> None:
-        present_surf = self.present
-        if isinstance(self.present, str):
-            present_surf = button_font.render(self.present, True, WHITE)
-        if self.is_hovered and self.expandable:
-            present_surf = pygame.transform.scale_by(present_surf, 1.1)
-            if isinstance(self.present, str):
-                pygame.draw.rect(surface, self.color, self.rect.scale_by(1.1, 1.1), border_radius=15)
-                if self.last_hovered == False:
-                    hover_sound.play()
-        else:
-            if isinstance(self.present, str):
-                pygame.draw.rect(surface, self.color, self.rect, border_radius=15)
-
-        self.last_hovered = self.is_hovered
-        present_rect = present_surf.get_rect(center=self.rect.center)
-        surface.blit(present_surf, present_rect)
-
-    def handle_event(self, event: pygame.event) -> None:
-        if event.type == pygame.MOUSEMOTION:
-            self.is_hovered = self.rect.collidepoint(event.pos)
-        elif self.is_hovered and (event.type == pygame.MOUSEBUTTONDOWN or
-                                  event.type == pygame.KEYDOWN and event.key in [pygame.K_RETURN, pygame.K_SPACE]):
-            if self.expandable:
-                click_sound.play()
-            self.callback()
-    
-    def set_text(self, text: str) -> None:
-        if isinstance(self.present, str):
-            self.present = text
-
-class InputBox:
-    def __init__(self, x, y, w, h, text=''):
-        self.rect = pygame.Rect(x, y, w, h)
-        self.color = WHITE
-        self.text = text
-        self.active = False
-        self.just_got_clicked = False
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            self.active = self.rect.collidepoint(event.pos)
-            if self.active:
-                self.just_got_clicked = True
-        if event.type == pygame.KEYDOWN and self.active:
-            if event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1]
-            else:
-                if self.just_got_clicked:
-                    self.text = ""
-                    self.just_got_clicked = False
-                self.text += event.unicode
-
-    def draw_box(self, surface):
-        color = LIGHT_GRAY if self.active else self.color
-        pygame.draw.rect(surface, color, self.rect, border_radius=5)
-        pygame.draw.rect(surface, BLACK, self.rect, 2, border_radius=5)
-        text_surface = FONT_MEDIUM.render(self.text, True, BLACK)
-        surface.blit(text_surface, (self.rect.x + 8, self.rect.y + 8))
-
-
-def draw_cell(cell, is_visible, agent):
-    x, y = cell.location
-    cell_rect = pygame.Rect(GRID_ORIGIN[0] + x * GRID_SIZE, GRID_ORIGIN[1] + y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
-
-    # hide unknown cells
-    if not is_visible:
-        pygame.draw.rect(screen, DARK_GRAY, cell_rect)
-        pygame.draw.rect(screen, BLACK, cell_rect, 1)
-        return
-
-    bg_color = WHITE
-    if cell.isDangerous(): 
-        bg_color = RED
-    elif cell.isSafe(): 
-        bg_color = GREEN
-    if cell.isVisited(): 
-        bg_color = LIGHT_GRAY
-    pygame.draw.rect(screen, bg_color, cell_rect)
-
-    if cell.isVisited():
-        if cell.getBreeze():
-            screen.blit(breeze_surf_icon, cell_rect.topleft)
-        if cell.getStench():
-            stench_rect = stench_surf_icon.get_rect(topright=cell_rect.topright)
-            screen.blit(stench_surf_icon, stench_rect)
-
-    occupant_surf_icon = None
-    if cell.getPit():
-        occupant_surf_icon = pit_surf_icon
-    elif cell.getWumpus():
-        occupant_surf_icon = wumpus_surf_icon
-    elif cell.getGold():
-        occupant_surf_icon = gold_surf_icon
-        
-    if occupant_surf_icon:
-        occupant_rect = occupant_surf_icon.get_rect(center=cell_rect.center)
-        screen.blit(occupant_surf_icon, occupant_rect)
-        
-    if agent.location == (x, y):
-        agent_surf_icon = None
-        if agent.direction == "UP": 
-            agent_surf_icon = agent_up_surf_icon
-        elif agent.direction == "RIGHT": 
-            agent_surf_icon = agent_right_surf_icon
-        elif agent.direction == "DOWN": 
-            agent_surf_icon = agent_down_surf_icon
-        elif agent.direction == "LEFT": 
-            agent_surf_icon = agent_left_surf_icon
-        
-        if agent_surf_icon:
-            agent_rect = agent_surf_icon.get_rect(center=cell_rect.center)
-            screen.blit(agent_surf_icon, agent_rect)
-            
-    # 6. Draw Grid Border over everything
-    pygame.draw.rect(screen, BLACK, cell_rect, 1)
+original_assets = {
+        'agent_up': pygame.image.load("./assets/agent_up.png").convert_alpha(),
+        'agent_right': pygame.image.load("./assets/agent_right.png").convert_alpha(),
+        'agent_down': pygame.image.load("./assets/agent_down.png").convert_alpha(),
+        'agent_left': pygame.image.load("./assets/agent_left.png").convert_alpha(),
+        'breeze': pygame.image.load("./assets/breeze.png").convert_alpha(),
+        'gold': pygame.image.load("./assets/gold.png").convert_alpha(),
+        'pit': pygame.image.load("./assets/pit.png").convert_alpha(),
+        'stench': pygame.image.load("./assets/stench.png").convert_alpha(),
+        'wumpus': pygame.image.load("./assets/wumpus.png").convert_alpha(),
+        'bump': pygame.image.load("./assets/bump.png").convert_alpha(),
+        'glitter': pygame.image.load("./assets/glitter.png").convert_alpha(),
+        'scream': pygame.image.load("./assets/scream.png").convert_alpha(),
+    }
+PERCEPTS_ICON_SIZE = (32, 32)
 
 def menu_loop() -> None:
     running = True
@@ -323,6 +152,10 @@ def start_game() -> None:
     agent = None
     world = None
     
+    GRID_SIZE = 0
+    GRID_ORIGIN = (0, 0)
+    scaled_assets = {}
+
     settings = {
         'world_size': 8, 
         'num_wumpus': 1, 
@@ -333,25 +166,147 @@ def start_game() -> None:
 
     pause = True
     game_over = False
-    fog_of_war = True
     last_step_time = 0
     
     game_buttons = {}
     setup_buttons = {}
     input_boxes = {}
+    cell_icon_map = {}
 
-    def start_the_game():
+    def create_scaled_assets(icon_size_px, agent_icon_px):
+        "Scale image according to size map"
+        scaled = {}
+        icon_tuple = (icon_size_px, icon_size_px)
+        agent_icon_tuple = (agent_icon_px, agent_icon_px)
+        for name, surf in original_assets.items():
+            if "agent" in name:
+                scaled[name] = pygame.transform.scale(surf, agent_icon_tuple)
+            else:
+                scaled[name] = pygame.transform.scale(surf, icon_tuple)
+        return scaled
+
+    def update_visual_knowledge():
+        nonlocal cell_icon_map
+        cell_icon_map.clear()
+        if not agent or not world: return
+
+        known_pits = set()
+        known_wumpus = set()
+        for clause in agent.kb.clauses:
+            if len(clause) == 1:
+                literal = next(iter(clause))
+                if not literal.startswith('~'):
+                    try:
+                        entity_type = literal[0]
+                        coords = tuple(map(int, literal[1:].split('-')))
+                        if entity_type == 'P': known_pits.add(coords)
+                        elif entity_type == 'W': known_wumpus.add(coords)
+                    except (ValueError, IndexError): continue
+
+        for x in range(world.size):
+            for y in range(world.size):
+                loc = (x, y)
+                icons = []
+                if loc in agent.total_percepts:
+                    percepts = agent.total_percepts[loc]
+                    if percepts.get('breeze'): 
+                        icons.append(scaled_assets['breeze'])
+                    if percepts.get('stench'): 
+                        icons.append(scaled_assets['stench'])
+                
+                if loc in known_pits: 
+                    icons.append(scaled_assets['pit'])
+                if loc in known_wumpus: 
+                    icons.append(scaled_assets['wumpus'])
+                if (x, y) == agent.location and world.listCells[x][y].getGold(): 
+                    icons.append(scaled_assets['gold'])
+
+                cell_icon_map[loc] = icons
+    
+    def draw_cell(cell, is_visible, agent):
+        x, y = cell.location
+        inverted_y = (world.size - 1) - y
+        cell_rect = pygame.Rect(GRID_ORIGIN[0] + x * GRID_SIZE, GRID_ORIGIN[1] + inverted_y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
+
+        if not is_visible:
+            pygame.draw.rect(screen, DARK_GRAY, cell_rect)
+        else:
+            bg_color = LIGHT_GRAY if cell.isVisited() else WHITE
+            if cell.isDangerous(): bg_color = RED
+            elif cell.isSafe(): bg_color = GREEN
+            pygame.draw.rect(screen, bg_color, cell_rect)
+
+        icons_to_draw = cell_icon_map.get((x, y), [])
+        
+        corner_positions = {0: 'topleft', 1: 'topright', 2: 'bottomleft', 3: 'bottomright'}
+        for i, icon_surface in enumerate(icons_to_draw):
+            if i >= 4: break
+            icon_rect = icon_surface.get_rect(**{corner_positions[i]: getattr(cell_rect, corner_positions[i])})
+            screen.blit(icon_surface, icon_rect)
+
+        if agent and agent.location == (x, y):
+            direction = agent.direction.lower()
+            agent_icon = scaled_assets.get(f'agent_{direction}', scaled_assets['agent_up'])
+            agent_rect = agent_icon.get_rect(center=cell_rect.center)
+            screen.blit(agent_icon, agent_rect)
+
+        pygame.draw.rect(screen, BLACK, cell_rect, 1)
+    
+    def run_one_game_turn():
+        nonlocal game_over, pause
+        agent.get_percepts_from(world)
+        world.reset_scream_bump()
+        agent.tell()
+        world.update_agent_known_cells()
+        agent.infer_surrounding_cells()
+        action_code = agent.select_action()
+        world.update_world(action=action_code)
+        agent.update_visited_location()
+        
+        update_visual_knowledge()
+
+        game_buttons['score_panel'].set_text(f'Score: {agent.score}')
+        game_buttons['action_panel'].set_text(f'Action: {agent.name_actions.get(action_code, "Unknown")}')
+        
+        percept_icons = [percepts_scaled_assets[p] for p, active in agent.percepts.items() if active]
+        game_buttons['percepts_panel'].set_icons(percept_icons)
+
+        if not agent.alive or agent.out:
+            game_over, pause = True, True
+            game_buttons['pause_play'].set_text('Game Over')
+
+
+
+    percepts_scaled_assets = {}
+    for name in ['stench', 'breeze', 'glitter', 'bump', 'scream']:
+        percepts_scaled_assets[name] = pygame.transform.scale(original_assets[name], PERCEPTS_ICON_SIZE)
+    
+    def start_main_loop():
         nonlocal agent, world, app_state, pause, game_over, last_step_time
-        # Validate and apply settings from input boxes
+        nonlocal GRID_SIZE, GRID_ORIGIN, scaled_assets
+
         try:
             settings['world_size'] = int(input_boxes['size'].text)
             settings['num_wumpus'] = int(input_boxes['wumpus'].text)
             settings['pit_prob'] = float(input_boxes['pit_prob'].text)
         except (ValueError, TypeError):
-            print("Invalid input! Using default values.")
-            # Revert to defaults if input is bad
             settings['world_size'], settings['num_wumpus'], settings['pit_prob'] = 8, 1, 0.2
         
+        grid_area_width = WIDTH - 400
+        grid_area_height = HEIGHT - 80
+        GRID_SIZE = min(grid_area_width // settings['world_size'], grid_area_height // settings['world_size'])
+        ICON_SIZE = GRID_SIZE // 3
+        AGENT_ICON_SIZE = GRID_SIZE // 2
+
+        total_grid_width = GRID_SIZE * settings['world_size']
+        total_grid_height = GRID_SIZE * settings['world_size']
+        GRID_ORIGIN = (
+            400 + (grid_area_width - total_grid_width) // 2,
+            40 + (grid_area_height - total_grid_height) // 2
+        )
+
+        scaled_assets = create_scaled_assets(ICON_SIZE, AGENT_ICON_SIZE)
+
         agent = Agent(random=settings['random_agent'])
         world = WumpusWorld(
             agent=agent, size=settings['world_size'], 
@@ -359,13 +314,11 @@ def start_game() -> None:
             moving_wumpus=settings['moving_wumpus']
         )
         
-        pause = True
-        game_over = False
-        last_step_time = 0
+        pause, game_over, last_step_time = True, False, 0
         game_buttons['pause_play'].set_text('Play (P)')
         game_buttons['score_panel'].set_text(f'Score: {agent.score}')
         game_buttons['action_panel'].set_text('Action: None')
-        game_buttons['percepts_panel'].set_text('Percepts: {}')
+        game_buttons['percepts_panel'].set_icons([])
         
         app_state = 'game'
 
@@ -388,34 +341,35 @@ def start_game() -> None:
     input_boxes['pit_prob'] = InputBox(WIDTH//2, 300, 150, 40, str(settings['pit_prob']))
     
     random_agent_button = Button(f"Random Agent: {'Yes' if settings['random_agent'] else 'No'}",
-                                 WIDTH//2 - 150, 380, 300, 50, GRAY, None)
+                                 WIDTH//2 - 150, 380, 300, 50, ATOMIC_TANGERINE, None)
     random_agent_button.callback = lambda: toggle_setting('random_agent', random_agent_button, "Random Agent: {}")
     setup_buttons['random_agent'] = random_agent_button
 
     moving_wumpus_button = Button(f"Moving Wumpus: {'Yes' if settings['moving_wumpus'] else 'No'}",
-                                  WIDTH//2 - 150, 440, 300, 50, GRAY, None)
+                                  WIDTH//2 - 150, 440, 300, 50, AMARANTH_PURPLE, None)
     moving_wumpus_button.callback = lambda: toggle_setting('moving_wumpus', moving_wumpus_button, "Moving Wumpus: {}")
     setup_buttons['moving_wumpus'] = moving_wumpus_button
 
-    setup_buttons['start'] = Button('Start Game', WIDTH//2 - 100, 520, 200, 60, GREEN, start_the_game)
+    setup_buttons['start'] = Button('Start Game', WIDTH//2 - 100, 520, 200, 60, GREEN, start_main_loop)
 
     game_buttons['pause_play'] = Button('Play (P)', 20, 20, 180, 50, GREEN, change_play_pause)
     game_buttons['reset'] = Button('New Game', 20, 80, 180, 50, BLUE, reset_to_setup)
-    game_buttons['fog'] = Button('Fog: ON', 20, 140, 180, 50, PURPLE, lambda: toggle_fog())
-    game_buttons['score_panel'] = Button('Score: 0', 20, 240, 220, 50, GRAY, None, expandable=False)
-    game_buttons['action_panel'] = Button('Action: None', 20, 300, 220, 50, GRAY, None, expandable=False)
-    game_buttons['percepts_panel'] = Button('Percepts: {}', 20, 360, 220, 50, GRAY, None, expandable=False)
     
-    def toggle_fog():
-        nonlocal fog_of_war
-        fog_of_war = not fog_of_war
-        game_buttons['fog'].set_text('Fog: ON' if fog_of_war else 'Fog: OFF')
+    game_buttons['score_panel'] = Button('Score: 0', 20, 240, 264, 60, ZOMP, None, expandable=False)
+    game_buttons['action_panel'] = Button('Action: None', 20, 320, 264, 60, FRENCH_BLUE, None, expandable=False)
+    percept_label_surf = button_font.render("Percepts:", True, WHITE)
+    game_buttons['percepts_label'] = Button('Percepts:', 20, 400, percept_label_surf.get_width() + 150, 60, ATOMIC_TANGERINE, None, expandable=False)
+    game_buttons['percepts_panel'] = Button('', 20, 480, 264, 60, CREAM, None, expandable=False)
+
+    game_buttons['die_panel'] = Button('Agent is dead!', 20, 480, 264, 60, AMARANTH_PURPLE, None, expandable=False)
+    game_buttons['climb_panel'] = Button('Agent has climbed out!', 20, 560, 264, 60, GREEN, None, expandable=False)
 
     # main loop
     running = True
     while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: running = False
+            if event.type == pygame.QUIT:
+                quit_game()
             
             if app_state == 'setup':
                 for btn in setup_buttons.values(): btn.handle_event(event)
@@ -442,34 +396,24 @@ def start_game() -> None:
 
         elif app_state == 'game':
             if not pause and not game_over and pygame.time.get_ticks() - last_step_time >= DELAY_TIME:
-
-                agent.get_percepts_from(world)
-                world.reset_scream_bump()
-                agent.tell()
-                world.update_agent_known_cells()
-                agent.infer_surrounding_cells()
-                action_code = agent.select_action()
-                world.update_world(action=action_code)
-                agent.update_visited_location()
-                
-                game_buttons['score_panel'].set_text(f'Score: {agent.score}')
-                game_buttons['action_panel'].set_text(f'Action: {agent.name_actions.get(action_code, "Unknown")}')
-                game_buttons['percepts_panel'].set_text(f'Percepts: {agent.percepts}')
-                
-                if not agent.alive or agent.out:
-                    game_over = True; pause = True
-                    game_buttons['pause_play'].set_text('Game Over')
-                
+                run_one_game_turn()
                 last_step_time = pygame.time.get_ticks()
 
             known_locs = {cell.location for cell in agent.known_cells} if agent else set()
             if world:
                 for x in range(world.size):
                     for y in range(world.size):
-                        draw_cell(world.listCells[x][y], (x,y) in known_locs or not fog_of_war, agent)
+                        draw_cell(world.listCells[x][y], (x, y) in known_locs, agent)
 
-            for button in game_buttons.values(): 
-                button.draw_button(screen)
+            for name, button in game_buttons.items():
+                if name not in ['die_panel', 'climb_panel']:
+                    button.draw_button(screen)
+            
+            if game_over:
+                if not agent.alive:
+                    game_buttons['die_panel'].draw_button(screen)
+                elif agent.out:
+                    game_buttons['climb_panel'].draw_button(screen)
         
         pygame.display.flip()
         clock.tick(FPS)
