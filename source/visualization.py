@@ -106,7 +106,6 @@ def introduction_screen() -> None:
     notation_icon_size = (40, 40)
     notations = []
     
-    # Define which assets to show and their descriptions
     symbols_to_explain = {
         'agent_up': "The Agent",
         'wumpus': "The deadly Wumpus",
@@ -152,20 +151,16 @@ def introduction_screen() -> None:
             text_surf = intro_font.render(line, True, BLACK)
             screen.blit(text_surf, (50, 120 + 35 * i))
 
-        # Render "Game Notations" title
         notation_title_surf = FONT_MEDIUM.render("Game Symbols", True, BLACK)
         screen.blit(notation_title_surf, (40, 360))
         
-        # Render the list of icons and their descriptions on the right
         notation_start_y = 420
         for i, (icon_surf, description) in enumerate(notations):
             y_pos = notation_start_y + (i % 4) * (notation_icon_size[1] + 15)
             
-            # Draw the icon
             icon_rect = icon_surf.get_rect(centery=y_pos, left=40 + 400 * (i > 3))
             screen.blit(icon_surf, icon_rect)
             
-            # Draw the description text next to it
             desc_surf = FONT_MEDIUM.render(f"- {description}", True, BLACK)
             desc_rect = desc_surf.get_rect(centery=y_pos, left=icon_rect.right + 20)
             screen.blit(desc_surf, desc_rect)
@@ -189,7 +184,7 @@ def introduction_screen() -> None:
         clock.tick(FPS)
 
 def start_game() -> None:
-    app_state = 'setup'  # 'setup' or 'game'
+    app_state = 'setup'
     agent = None
     world = None
     
@@ -390,7 +385,7 @@ def start_game() -> None:
                                   WIDTH//2 - 150, 440, 300, 50, AMARANTH_PURPLE, None)
     moving_wumpus_button.callback = lambda: toggle_setting('moving_wumpus', moving_wumpus_button, "Moving Wumpus: {}")
     setup_buttons['moving_wumpus'] = moving_wumpus_button
-    
+
     back_button_title = button_font.render("Back to Menu", True, BLACK)
     back_button_width = back_button_title.get_width() + 35
     back_button_height = back_button_title.get_height() + 35
