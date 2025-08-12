@@ -7,13 +7,6 @@ def get_testcase(world_size, num_wumpus, pit_prob, random_agent_input, wumpus_mo
     agent = Agent(random=random_agent_input)
     world = WumpusWorld(size=world_size, num_wumpus=num_wumpus, pit_prob=pit_prob, agent=agent, moving_wumpus=wumpus_moving_input)
     
-    # get initial state
-    initial_state = {}
-    for cell_row in world.listCells:
-        for cell in cell_row:
-            list_state = [cell.name_state[i] for i, state in enumerate(cell.states()) if state]
-            initial_state[str(cell.location)] = list_state
-
     agent_actions = []
 
     # main loop
@@ -49,7 +42,6 @@ def get_testcase(world_size, num_wumpus, pit_prob, random_agent_input, wumpus_mo
         "random_agent": random_agent_input,
         "moving_wumpus": world.moving_wumpus,
         "agent_action_log": agent_actions,
-        "initial_state": initial_state,
         "final_state": final_state
     }
 if __name__ == "__main__":
