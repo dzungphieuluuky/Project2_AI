@@ -77,9 +77,9 @@ py source/visualization.py
 **Expected Output:**
 - A window will open showing the Wumpus World grid and agent.
 - Use the menu to start the game, view introduction, or quit.
-- The agent's actions, score, and percepts are displayed in real time.
+- The agent's actions, score, and percepts are displayed in real time.  
 You should expect a screen like this appear:
-![image](https://hackmd.io/_uploads/BkzUZxYuxe.png)
+![image](./assets/menu_screen.png)
 
 
 ## Project Structure
