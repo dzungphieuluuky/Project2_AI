@@ -194,7 +194,7 @@ def start_game() -> None:
 
     settings = {
         'world_size': 8, 
-        'num_wumpus': 1, 
+        'num_wumpus': 2, 
         'pit_prob': 0.2,
         'random_agent': False, 
         'moving_wumpus': False
