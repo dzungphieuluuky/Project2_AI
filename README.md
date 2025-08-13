@@ -49,7 +49,7 @@ Game Symbol Definition:
 
 🏚️ Agent's current location: (0, 0)
 ↗️ Agent's current direction: RIGHT
-🦾 Action selected: MOVE_FORWARD
+🦾 Action selected: Move Forward
 💯 Score: 0
 🪙 Gold: False
 🏹 Arrow: True
